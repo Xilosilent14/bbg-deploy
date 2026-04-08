@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#e23636">
+    <meta name="screen-orientation" content="landscape">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;">
+    <title>Spidey Academy</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="css/shared/design-system.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Celebration Canvas -->
+    <canvas id="celebration-canvas"></canvas>
+
+    <!-- OTB Hub Button -->
+    <button class="btn-hub" id="btn-hub" style="display:none" aria-label="Back to Hub">🏠 Home</button>
+
+    <!-- Webby Sidekick -->
+    <div id="webby-character" class="webby-char webby-idle">
+        <img src="assets/webby.png" alt="Webby" class="webby-img">
+    </div>
+
+    <!-- ===== SPLASH ===== -->
+    <div id="screen-splash" class="screen active">
+        <div class="splash-content">
+            <div class="splash-banner-wrap">
+                <img src="assets/banner.png" alt="Spidey Academy" class="splash-banner-img">
+            </div>
+            <div class="splash-loader"><div class="splash-loader-fill"></div></div>
+        </div>
+    </div>
+
+    <!-- ===== TITLE ===== -->
+    <div id="screen-title" class="screen">
+        <div class="otb-badge" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:15;">Blake Boys Gaming</div>
+        <a id="title-bbg-logo-link" href="#" class="bbg-corner-logo-link" aria-label="Return to Hub"><img src="assets/bbg-logo.png" alt="BBG" class="bbg-corner-logo"></a>
+        <div class="title-content">
+            <img src="assets/hero.png" alt="Spidey" class="title-hero-img">
+            <h1 class="title-game-name">SPIDEY<br><span class="title-game-accent">ACADEMY</span></h1>
+            <div class="title-subtitle">Learn with Spidey &amp; Friends!</div>
+            <button class="big-btn btn-play title-play-btn" id="btn-title-play" aria-label="Play">&#x1F3AE; PLAY</button>
+        </div>
+    </div>
+
+    <!-- ===== HOME ===== -->
+    <div id="screen-home" class="screen">
+        <div class="otb-badge" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:15;">Blake Boys Gaming</div>
+        <a id="bbg-logo-link" href="#" class="bbg-corner-logo-link" aria-label="Return to Hub"><img src="assets/bbg-logo.png" alt="BBG" class="bbg-corner-logo"></a>
+        <div class="home-layout">
+            <div class="home-top-row">
+                <div class="home-char-col">
+                    <img src="assets/hero.png" alt="Bug Hero" class="home-hero-img" id="spidey-character" width="140" height="140">
+                </div>
+                <div class="home-info-col">
+                    <h1 class="home-greeting-text" id="home-greeting"></h1>
+                    <div class="home-level-row">
+                        <span class="home-level-badge" id="home-level-badge">Lv.1</span>
+                        <span class="home-level-name" id="home-level-name">Little Spider</span>
+                    </div>
+                    <div class="home-xp-bar">
+                        <div class="home-xp-fill" id="home-xp-fill" style="width:0%"></div>
+                    </div>
+                    <div class="home-stats">
+                        <span class="home-stat" id="home-sticker-stat">⭐ 0/30</span>
+                        <span class="home-stat" id="home-streak-stat">🔥 0 days</span>
+                        <span class="home-stat" id="home-badge-stat">🏅 0/8</span>
+                        <span class="home-stat" id="home-grade-stat">📚 Pre-K</span>
+                    </div>
+                </div>
+            </div>
+            <div class="home-buttons">
+                <button class="big-btn btn-play" id="btn-play" aria-label="Play activities">🎮 Play!</button>
+                <button class="big-btn btn-stickers" id="btn-stickers" aria-label="View sticker book">⭐ Stickers</button>
+            </div>
+            <button class="btn-parents" id="btn-parents" aria-label="Parent dashboard">👤 Parents</button>
+            <!-- Badges row -->
+            <div class="home-badges" id="home-badges"></div>
+        </div>
+    </div>
+
+    <!-- ===== ACTIVITY SELECT ===== -->
+    <div id="screen-activities" class="screen">
+        <div class="activities-layout">
+            <div class="activities-header">
+                <button class="back-btn" id="btn-activities-back" aria-label="Back to home">◀</button>
+                <span class="activities-title">Pick a Game!</span>
+            </div>
+            <div class="activity-grid" id="activity-grid"></div>
+        </div>
+    </div>
+
+    <!-- ===== ACTIVITY PLAY ===== -->
+    <div id="screen-activity" class="screen">
+        <div class="activity-play-layout">
+            <button class="back-btn activity-home-btn" id="btn-activity-home" aria-label="Back to home" style="position:absolute;top:8px;left:8px;z-index:20;">◀ Home</button>
+            <div id="activity-container"></div>
+        </div>
+    </div>
+
+    <!-- ===== STICKER BOOK ===== -->
+    <div id="screen-stickers" class="screen">
+        <div class="stickers-layout">
+            <div class="stickers-header">
+                <button class="back-btn" id="btn-stickers-back" aria-label="Back to home">◀</button>
+                <span class="stickers-title">⭐ My Stickers</span>
+                <span class="stickers-total" id="stickers-total">0 / 30</span>
+            </div>
+            <div id="sticker-container"></div>
+        </div>
+    </div>
+
+    <!-- ===== PARENT GATE ===== -->
+    <div id="screen-parent-gate" class="screen">
+        <div class="parent-gate-layout">
+            <div id="parent-gate-content"></div>
+        </div>
+    </div>
+
+    <!-- ===== PARENT DASHBOARD ===== -->
+    <div id="screen-parent-dashboard" class="screen">
+        <div class="parent-dashboard-layout">
+            <div class="pd-header">
+                <button class="back-btn" id="btn-parent-back" aria-label="Back to home">◀</button>
+                <span class="pd-title">Parent Dashboard</span>
+            </div>
+            <div class="pd-scroll" id="parent-dashboard-content"></div>
+        </div>
+    </div>
+
+    <!-- Level Up Overlay -->
+    <div id="level-up-overlay" class="level-up-overlay" style="display:none">
+        <div class="level-up-card">
+            <div class="level-up-stars">⭐</div>
+            <div class="level-up-text">Level Up!</div>
+            <div class="level-up-level" id="level-up-level">Level 2</div>
+            <div class="level-up-name" id="level-up-name">Web Spinner</div>
+        </div>
+    </div>
+
+    <!-- Badge Earned Overlay -->
+    <div id="badge-overlay" class="badge-overlay" style="display:none">
+        <div class="badge-earned-card">
+            <div class="badge-earned-icon" id="badge-earned-icon"></div>
+            <div class="badge-earned-label">New Badge!</div>
+            <div class="badge-earned-name" id="badge-earned-name"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/otb-config.js"></script>
+    <script src="js/ecosystem.js"></script>
+    <script src="js/voice.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/progress.js"></script>
+    <script src="js/celebration.js"></script>
+    <script src="js/character.js"></script>
+    <script src="js/backgrounds.js"></script>
+    <script src="js/badges.js"></script>
+    <script src="js/achievements.js"></script>
+    <script src="js/sticker-book.js"></script>
+    <script src="js/activities/color-catch.js"></script>
+    <script src="js/activities/shape-builder.js"></script>
+    <script src="js/activities/number-bugs.js"></script>
+    <script src="js/activities/letter-web.js"></script>
+    <script src="js/activities/sort-sweep.js"></script>
+    <script src="js/parent-dashboard.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const l=document.getElementById('bbg-logo-link');if(l)l.href=u;const l2=document.getElementById('title-bbg-logo-link');if(l2)l2.href=u;}
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>

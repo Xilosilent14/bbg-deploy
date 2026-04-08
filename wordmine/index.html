@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4a8f3f">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self';">
+    <title>Word Mine — Minecraft Learning</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="css/shared/design-system.css?v=1">
+    <link rel="stylesheet" href="css/style.css?v=40">
+</head>
+<body>
+    <!-- ========== LOADING SCREEN (Unified OTB splash + Minecraft blocks) ========== -->
+    <div id="loading-screen" class="screen active otb-splash">
+        <div class="otb-splash-badge">Blake Boys Gaming</div>
+        <div class="loading-content">
+            <div class="loading-logo">
+                <div class="mc-block diamond-block"></div>
+                <div class="mc-block grass-block"></div>
+                <div class="mc-block stone-block"></div>
+            </div>
+            <h1 class="otb-splash-title" style="font-size: 1.8rem;">WORD MINE</h1>
+            <div class="otb-splash-loader" style="margin-top: 16px;">
+                <div class="otb-splash-loader-fill" id="loading-bar"></div>
+            </div>
+            <p class="otb-splash-subtitle" style="font-size: 0.75rem; margin-top: 8px;">Loading world...</p>
+        </div>
+    </div>
+
+    <!-- ========== WELCOME SCREEN ========== -->
+    <div id="welcome-screen" class="screen">
+        <div class="welcome-content panel">
+            <h2 class="pixel-title">Welcome, Miner!</h2>
+            <div class="welcome-form">
+                <label class="pixel-text">What's your name?</label>
+                <input type="text" id="player-name" class="mc-input" placeholder="Steve" maxlength="12" autocomplete="off">
+                <label class="pixel-text">What grade are you in?</label>
+                <div class="grade-buttons">
+                    <button class="mc-btn grade-btn" data-grade="prek">Pre-K</button>
+                    <button class="mc-btn grade-btn selected" data-grade="k">Kinder</button>
+                    <button class="mc-btn grade-btn" data-grade="1">1st</button>
+                    <button class="mc-btn grade-btn" data-grade="2">2nd</button>
+                    <button class="mc-btn grade-btn" data-grade="3">3rd</button>
+                </div>
+                <button class="mc-btn mc-btn-primary" id="start-adventure-btn">Start Mining!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== TITLE SCREEN ========== -->
+    <div id="title-screen" class="screen">
+        <div class="otb-badge" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:15;">Blake Boys Gaming</div>
+        <a id="bbg-logo-link" href="#" class="bbg-corner-logo-link" aria-label="Return to Hub"><img src="assets/bbg-logo.png" alt="BBG" class="bbg-corner-logo"></a>
+        <div class="title-content">
+            <div class="title-scene">
+                <canvas id="title-canvas" width="320" height="180"></canvas>
+            </div>
+            <div class="title-overlay">
+                <img src="assets/title-logo.png" alt="WORD MINE" class="title-logo-img" onerror="this.style.display='none';document.querySelector('.game-title').style.display='block';">
+                <h1 class="game-title pixel-title" style="display:none">WORD MINE</h1>
+                <p class="subtitle pixel-text" style="display:none">by thinkfast14</p>
+                <div class="title-buttons">
+                    <button class="mc-btn mc-btn-primary" id="play-btn">Play</button>
+                    <button class="mc-btn" id="garage-btn">Skins</button>
+                    <button class="mc-btn" id="shop-btn">Shop</button>
+                    <button class="mc-btn" id="achievements-btn">Trophies</button>
+                    <button class="mc-btn" id="settings-btn">Settings</button>
+                    <button class="mc-btn mc-btn-small" id="parent-btn">Parent Dashboard</button>
+                    <a id="hub-link" href="#" class="mc-btn mc-btn-small" style="display:none;opacity:0.5;text-decoration:none;margin-top:4px;text-align:center;">🎮 Hub</a>
+                </div>
+                <div class="player-info">
+                    <span class="pixel-text" id="title-player-name"></span>
+                    <span class="pixel-text" id="title-player-level"></span>
+                    <div class="xp-bar-mini"><div class="xp-fill" id="title-xp-fill"></div></div>
+                    <span class="pixel-text gem-display" id="title-gems">0 gems</span>
+                </div>
+                <div class="daily-streak-badge" id="daily-streak-badge" style="display:none">
+                    <span class="streak-fire">🔥</span>
+                    <span class="pixel-text" id="daily-streak-count">0</span>
+                    <span class="pixel-text streak-label">day streak</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODE SELECT SCREEN ========== -->
+    <div id="mode-screen" class="screen">
+        <div class="mode-content">
+            <h2 class="pixel-title" style="font-family:var(--otb-font-heading);text-shadow:none;font-size:1.3rem;">Choose Your Adventure</h2>
+            <div class="mode-grid">
+                <button class="mode-card" id="mode-mine" aria-label="Mine Mode - Mine word blocks">
+                    <div class="mode-icon">
+                        <div class="mc-block pickaxe-icon"></div>
+                    </div>
+                    <h3 class="pixel-text">Mine Mode</h3>
+                    <p class="mode-desc">Mine word blocks!</p>
+                </button>
+                <button class="mode-card" id="mode-bridge" aria-label="Bridge Builder - Build a bridge with 50 sight words">
+                    <div class="mode-icon">
+                        <div class="mc-block bridge-icon"></div>
+                    </div>
+                    <h3 class="pixel-text">Bridge Builder</h3>
+                    <p class="mode-desc">Build a bridge with 50 sight words!</p>
+                </button>
+                <button class="mode-card" id="mode-enchant" aria-label="Enchanting - Decode nonsense words">
+                    <div class="mode-icon">
+                        <div class="mc-block enchant-icon"></div>
+                    </div>
+                    <h3 class="pixel-text">Enchanting</h3>
+                    <p class="mode-desc">Decode nonsense words!</p>
+                </button>
+                <button class="mode-card" id="mode-craft" aria-label="Crafting - Practice all topics">
+                    <div class="mode-icon">
+                        <div class="mc-block craft-icon"></div>
+                    </div>
+                    <h3 class="pixel-text">Crafting</h3>
+                    <p class="mode-desc">Practice all topics!</p>
+                </button>
+                <button class="mode-card" id="mode-explore" aria-label="Explore - Free play no timer">
+                    <div class="mode-icon">
+                        <div class="mc-block explore-icon"></div>
+                    </div>
+                    <h3 class="pixel-text">Explore</h3>
+                    <p class="mode-desc">Free play - no timer!</p>
+                </button>
+                <button class="mode-card" id="mode-survival" aria-label="Survival - Fight mobs with words">
+                    <div class="mode-icon">
+                        <div class="mc-block mob-icon"></div>
+                    </div>
+                    <h3 class="pixel-text">Survival</h3>
+                    <p class="mode-desc">Fight mobs with words!</p>
+                </button>
+                <button class="mode-card" id="mode-speed" aria-label="Speed Round - 60 second blitz">
+                    <div class="mode-icon">
+                        <div class="mc-block" style="background:#e94560"></div>
+                    </div>
+                    <h3 class="pixel-text">Speed Round</h3>
+                    <p class="mode-desc">60 sec blitz!</p>
+                </button>
+                <button class="mode-card mode-card-daily" id="mode-daily" aria-label="Daily Challenge - 10 words, double XP">
+                    <div class="mode-icon">
+                        <div class="mc-block daily-icon"></div>
+                    </div>
+                    <h3 class="pixel-text">Daily Challenge</h3>
+                    <p class="mode-desc">10 words, 2x XP!</p>
+                </button>
+            </div>
+            <button class="mc-btn mc-btn-back" id="mode-back-btn">Back</button>
+        </div>
+    </div>
+
+    <!-- ========== TOPIC SELECT (for Crafting mode) ========== -->
+    <div id="topic-screen" class="screen">
+        <div class="topic-content">
+            <h2 class="pixel-title">Choose a Topic</h2>
+            <div class="topic-tabs" role="tablist" aria-label="Subject selection">
+                <button class="mc-btn topic-tab selected" data-subject="reading" role="tab" aria-selected="true">Reading</button>
+                <button class="mc-btn topic-tab" data-subject="math" role="tab" aria-selected="false">Math</button>
+            </div>
+            <div class="topic-grid" id="topic-grid"></div>
+            <button class="mc-btn mc-btn-back" id="topic-back-btn">Back</button>
+        </div>
+    </div>
+
+    <!-- ========== GAME SCREEN ========== -->
+    <div id="game-screen" class="screen">
+        <canvas id="game-canvas"></canvas>
+        <!-- HUD Overlay -->
+        <div class="hud" id="game-hud">
+            <div class="hud-left">
+                <div class="hud-hearts" id="hud-hearts"></div>
+                <div class="hud-streak" id="hud-streak">
+                    <span class="pixel-text" id="streak-count">0</span>
+                    <span class="pixel-text streak-label">streak</span>
+                </div>
+            </div>
+            <div class="hud-center">
+                <div class="hud-score pixel-text" id="hud-score">0</div>
+                <div class="hud-timer pixel-text" id="hud-timer"></div>
+                <div class="hud-mode-label pixel-text" id="hud-mode-label"></div>
+            </div>
+            <div class="hud-right">
+                <div class="hud-xp pixel-text" id="hud-xp">XP: 0</div>
+                <div class="hud-progress pixel-text" id="hud-progress"></div>
+                <button class="mc-btn mc-btn-small hud-pause" id="pause-btn" aria-label="Pause game">| |</button>
+            </div>
+        </div>
+        <!-- Combo overlay (HTML for crisp text) -->
+        <div class="combo-overlay pixel-text" id="combo-overlay" aria-live="polite"></div>
+        <!-- Inventory bar overlay -->
+        <div class="inventory-bar" id="inventory-bar"></div>
+        <!-- Mob name overlay (positioned dynamically) -->
+        <div class="mob-name-overlay pixel-text" id="mob-name-overlay"></div>
+
+        <!-- Question Overlay -->
+        <div class="question-overlay" id="question-overlay">
+            <div class="question-panel panel">
+                <button class="question-pause-btn" id="question-pause-btn" title="Pause" aria-label="Pause game">| |</button>
+                <div class="question-word-row">
+                    <div class="question-word" id="question-word" aria-live="polite"></div>
+                    <button class="hear-btn" id="hear-btn" title="Hear it again (R)" aria-label="Hear word again">&#128264;</button>
+                    <button class="hear-btn hint-btn" id="hint-btn" title="Get a hint" aria-label="Get a hint" style="display:none;">&#128161;</button>
+                </div>
+                <div class="question-prompt pixel-text" id="question-prompt"></div>
+                <div class="keyboard-hints pixel-text" style="font-size:8px;color:rgba(255,255,255,0.25);text-align:center;margin-top:-2px;">Press 1-4 to answer &bull; R to replay</div>
+                <div class="answer-buttons" id="answer-buttons"></div>
+                <div class="question-feedback" id="question-feedback" aria-live="assertive"></div>
+            </div>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div class="pause-overlay" id="pause-overlay">
+            <div class="pause-panel panel">
+                <h2 class="pixel-title">Paused</h2>
+                <button class="mc-btn mc-btn-primary" id="resume-btn">Resume</button>
+                <button class="mc-btn" id="quit-btn">Quit to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== RESULTS SCREEN ========== -->
+    <div id="results-screen" class="screen">
+        <div class="results-content panel">
+            <h2 class="pixel-title" id="results-title">Great Mining!</h2>
+            <div class="results-stars" id="results-stars"></div>
+            <div class="results-stats">
+                <div class="stat-row">
+                    <span class="pixel-text">Correct</span>
+                    <span class="pixel-text stat-value" id="stat-correct">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="pixel-text">Total</span>
+                    <span class="pixel-text stat-value" id="stat-total">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="pixel-text">Accuracy</span>
+                    <span class="pixel-text stat-value" id="stat-accuracy">0%</span>
+                </div>
+                <div class="stat-row" id="stat-wpm-row" style="display:none">
+                    <span class="pixel-text">Words/Min</span>
+                    <span class="pixel-text stat-value" id="stat-wpm">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="pixel-text">XP Earned</span>
+                    <span class="pixel-text stat-value" id="stat-xp">+0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="pixel-text">Best Streak</span>
+                    <span class="pixel-text stat-value" id="stat-streak">0</span>
+                </div>
+                <div class="stat-row" id="stat-gems-row" style="display:none">
+                    <span class="pixel-text">Gems Earned</span>
+                    <span class="pixel-text stat-value" id="stat-gems" style="color:#2ecc71">0</span>
+                </div>
+            </div>
+            <!-- XP Progress Bar -->
+            <div class="results-xp-bar" id="results-xp-bar">
+                <div class="xp-bar-label pixel-text" id="xp-bar-label">Level 1</div>
+                <div class="xp-bar-track">
+                    <div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div>
+                </div>
+                <div class="xp-bar-text pixel-text" id="xp-bar-text">0 / 50 XP</div>
+            </div>
+            <!-- Newly Mastered Words -->
+            <div class="results-mastered" id="results-mastered" style="display:none">
+                <h3 class="pixel-text" style="color:#FFD700;margin:0 0 4px 0;font-size:10px">Words Leveled Up!</h3>
+                <div class="mastered-words" id="mastered-words-list"></div>
+            </div>
+            <!-- WPM Trend -->
+            <div class="results-wpm-trend" id="results-wpm-trend" style="display:none">
+                <div class="wpm-trend-bars" id="wpm-trend-bars"></div>
+                <div class="wpm-trend-label pixel-text" id="wpm-trend-label"></div>
+            </div>
+            <div class="results-words-missed" id="results-missed" style="display:none">
+                <h3 class="pixel-text">Words to Practice</h3>
+                <div class="missed-words" id="missed-words-list"></div>
+            </div>
+            <!-- Best Scores Leaderboard -->
+            <div class="leaderboard-section" id="results-leaderboard" style="display:none">
+                <h3 class="pixel-text" style="color:#FFD700;font-size:10px;margin:0 0 4px">Best Scores</h3>
+                <div id="leaderboard-entries"></div>
+            </div>
+            <div class="results-buttons">
+                <button class="mc-btn mc-btn-primary" id="play-again-btn">Play Again</button>
+                <button class="mc-btn" id="results-menu-btn">Menu</button>
+            </div>
+        </div>
+        <canvas id="celebration-canvas"></canvas>
+        <!-- Treasure Chest Bonus Mini-Game -->
+        <div class="treasure-overlay" id="treasure-overlay" style="display:none">
+            <div class="treasure-panel panel">
+                <h2 class="pixel-title" style="color:#FFD700">Bonus Treasure!</h2>
+                <p class="pixel-text" style="font-size:10px;color:#aaa;margin:4px 0 12px">Pick a chest!</p>
+                <div class="treasure-chests" id="treasure-chests"></div>
+                <div class="treasure-result pixel-text" id="treasure-result" style="display:none"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SKINS/GARAGE SCREEN ========== -->
+    <div id="skins-screen" class="screen">
+        <div class="skins-content">
+            <h2 class="pixel-title">Skins</h2>
+            <div class="skins-preview">
+                <canvas id="skin-preview-canvas" width="128" height="128"></canvas>
+            </div>
+            <div class="skins-grid" id="skins-grid"></div>
+            <button class="mc-btn mc-btn-back" id="skins-back-btn">Back</button>
+        </div>
+    </div>
+
+    <!-- ========== ACHIEVEMENTS SCREEN ========== -->
+    <div id="achievements-screen" class="screen">
+        <div class="achievements-content">
+            <h2 class="pixel-title">Trophies</h2>
+            <div class="achievements-grid" id="achievements-grid"></div>
+            <button class="mc-btn mc-btn-back" id="achievements-back-btn">Back</button>
+        </div>
+    </div>
+
+    <!-- ========== SHOP SCREEN ========== -->
+    <div id="shop-screen" class="screen">
+        <div class="shop-content">
+            <h2 class="pixel-title">Shop</h2>
+            <div class="shop-gems pixel-text" id="shop-gems">0 gems</div>
+            <div class="shop-tabs" role="tablist" aria-label="Shop categories">
+                <button class="mc-btn topic-tab selected" data-tab="tools" role="tab" aria-selected="true">Tools</button>
+                <button class="mc-btn topic-tab" data-tab="skins" role="tab" aria-selected="false">Skins</button>
+                <button class="mc-btn topic-tab" data-tab="effects" role="tab" aria-selected="false">Effects</button>
+                <button class="mc-btn topic-tab" data-tab="pets" role="tab" aria-selected="false">Pets</button>
+                <button class="mc-btn topic-tab" data-tab="worlds" role="tab" aria-selected="false">Worlds</button>
+                <button class="mc-btn topic-tab" data-tab="titles" role="tab" aria-selected="false">Titles</button>
+                <button class="mc-btn topic-tab" data-tab="powerups" role="tab" aria-selected="false">Power-Ups</button>
+            </div>
+            <div class="shop-grid" id="shop-grid"></div>
+            <button class="mc-btn mc-btn-back" id="shop-back-btn">Back</button>
+        </div>
+    </div>
+
+    <!-- ========== SETTINGS SCREEN ========== -->
+    <div id="settings-screen" class="screen">
+        <div class="settings-content panel">
+            <h2 class="pixel-title">Settings</h2>
+            <div class="setting-row">
+                <span class="pixel-text">Sound Effects</span>
+                <button class="mc-btn toggle-btn" id="toggle-sound" data-on="true">ON</button>
+            </div>
+            <div class="setting-row">
+                <span class="pixel-text">Music</span>
+                <button class="mc-btn toggle-btn" id="toggle-music" data-on="true">ON</button>
+            </div>
+            <div class="setting-row">
+                <span class="pixel-text">Voice (Read Aloud)</span>
+                <button class="mc-btn toggle-btn" id="toggle-voice" data-on="true">ON</button>
+            </div>
+            <div class="setting-row">
+                <span class="pixel-text">High Contrast</span>
+                <button class="mc-btn toggle-btn" id="toggle-contrast" data-on="false">OFF</button>
+            </div>
+            <div class="setting-row">
+                <span class="pixel-text">Grade Level</span>
+                <div class="grade-buttons settings-grade">
+                    <button class="mc-btn grade-btn" data-grade="prek">Pre-K</button>
+                    <button class="mc-btn grade-btn" data-grade="k">K</button>
+                    <button class="mc-btn grade-btn" data-grade="1">1st</button>
+                    <button class="mc-btn grade-btn" data-grade="2">2nd</button>
+                    <button class="mc-btn grade-btn" data-grade="3">3rd</button>
+                </div>
+            </div>
+            <button class="mc-btn mc-btn-back" id="settings-back-btn">Back</button>
+        </div>
+    </div>
+
+    <!-- ========== PARENT DASHBOARD ========== -->
+    <div id="parent-screen" class="screen">
+        <div class="parent-content">
+            <h2 class="pixel-title">Parent Dashboard</h2>
+            <div class="parent-lock" id="parent-lock">
+                <p class="pixel-text">Solve to unlock: <span id="parent-math"></span></p>
+                <input type="number" id="parent-answer" class="mc-input" placeholder="?">
+                <button class="mc-btn mc-btn-primary" id="parent-unlock-btn">Unlock</button>
+            </div>
+            <div class="parent-dashboard" id="parent-dashboard" style="display:none">
+                <div class="parent-section">
+                    <h3 class="pixel-text">Overview</h3>
+                    <div class="parent-stats" id="parent-overview"></div>
+                </div>
+                <div class="parent-section">
+                    <h3 class="pixel-text">FastBridge Readiness</h3>
+                    <div class="fastbridge-meters" id="fastbridge-meters"></div>
+                </div>
+                <div class="parent-section">
+                    <h3 class="pixel-text">Sight Words Progress</h3>
+                    <div class="word-grid" id="parent-sight-words"></div>
+                </div>
+                <div class="parent-section">
+                    <h3 class="pixel-text">Topic Accuracy</h3>
+                    <div class="topic-bars" id="parent-topics"></div>
+                </div>
+                <button class="mc-btn" id="reset-progress-btn">Reset All Progress</button>
+            </div>
+            <button class="mc-btn mc-btn-back" id="parent-back-btn">Back</button>
+        </div>
+    </div>
+
+    <!-- First-Time Tutorial Overlay -->
+    <div id="wm-tutorial" class="wm-tutorial-overlay" style="display:none;">
+        <div class="wm-tutorial-backdrop" id="wm-tutorial-backdrop"></div>
+        <div class="wm-tutorial-spotlight" id="wm-tutorial-spotlight"></div>
+        <div class="wm-tutorial-card" id="wm-tutorial-card">
+            <div class="wm-tutorial-dots" id="wm-tutorial-dots"></div>
+            <div class="wm-tutorial-emoji" id="wm-tutorial-emoji"></div>
+            <div class="wm-tutorial-text" id="wm-tutorial-text"></div>
+            <div class="wm-tutorial-buttons">
+                <button class="mc-btn mc-btn-small wm-tutorial-skip" id="wm-tutorial-skip">Skip</button>
+                <button class="mc-btn mc-btn-primary wm-tutorial-next" id="wm-tutorial-next">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievement Toast -->
+    <div id="achievement-toast" class="achievement-toast">
+        <div class="toast-icon">&#x2B50;</div>
+        <div class="toast-info">
+            <span class="pixel-text toast-title">Achievement!</span>
+            <span class="pixel-text toast-desc" id="toast-desc"></span>
+        </div>
+    </div>
+
+    <!-- Milestone Toast -->
+    <div id="milestone-toast" class="milestone-toast">
+        <span class="milestone-icon">⭐</span>
+        <span class="milestone-text pixel-text" id="milestone-text"></span>
+    </div>
+
+    <!-- Screen Wipe Overlay -->
+    <div id="screen-wipe" class="screen-wipe" style="display:none"></div>
+
+    <!-- Daily Streak Banner -->
+    <div id="streak-banner" class="streak-banner">
+        <div class="streak-content">
+            <span class="pixel-text streak-fire">&#x1F525;</span>
+            <span class="pixel-text" id="streak-days"></span>
+            <span class="pixel-text streak-bonus" id="streak-bonus"></span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/audio.js?v=35"></script>
+    <script src="js/progress.js?v=36"></script>
+    <script src="js/sight-words.js?v=35"></script>
+    <script src="js/nonsense.js?v=35"></script>
+    <script src="js/math-data.js?v=35"></script>
+    <script src="js/reading-data.js?v=35"></script>
+    <script src="js/sprites.js?v=35"></script>
+    <script src="js/world.js?v=35"></script>
+    <script src="js/achievements.js?v=36"></script>
+    <script src="js/celebration.js?v=35"></script>
+    <script src="js/mine-mode.js?v=35"></script>
+    <script src="js/bridge.js?v=35"></script>
+    <script src="js/enchant.js?v=35"></script>
+    <script src="js/craft.js?v=35"></script>
+    <script src="js/survival.js?v=35"></script>
+    <script src="js/speed-round.js?v=35"></script>
+    <script src="js/parent.js?v=35"></script>
+    <script src="js/settings.js?v=35"></script>
+    <script src="js/otb-config.js?v=1"></script>
+    <script src="js/ecosystem.js?v=1"></script>
+    <script src="js/main.js?v=38"></script>
+    <script>
+        if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const h=document.getElementById('hub-link');if(h)h.href=u;const l=document.getElementById('bbg-logo-link');if(l)l.href=u;}
+        if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+        let _deferredInstall;
+        window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); _deferredInstall = e; });
+    </script>
+</body>
+</html>

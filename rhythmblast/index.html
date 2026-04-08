@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self';">
+    <title>Rhythm Blast — Blake Boys Gaming</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="css/shared/design-system.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splash" class="otb-splash">
+        <div class="otb-splash-badge">Blake Boys Gaming</div>
+        <div class="splash-icon">🎵</div>
+        <div class="otb-splash-title" style="text-shadow: 0 0 20px rgba(168,85,247,0.5);">RHYTHM BLAST</div>
+        <div class="otb-splash-subtitle">Loading beats...</div>
+        <div class="otb-splash-loader">
+            <div class="otb-splash-loader-fill"></div>
+        </div>
+    </div>
+
+    <!-- Title Screen -->
+    <div id="screen-title" class="screen">
+        <div class="otb-badge" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:15;">Blake Boys Gaming</div>
+        <a id="bbg-logo-link" href="#" class="bbg-corner-logo-link" aria-label="Return to Hub"><img src="assets/bbg-logo.png" alt="BBG" class="bbg-corner-logo"></a>
+        <div class="title-bg">
+            <canvas id="title-canvas" width="1024" height="600"></canvas>
+
+            <!-- Sound wave rings behind title -->
+            <div class="sound-waves">
+                <div class="sound-ring ring-1"></div>
+                <div class="sound-ring ring-2"></div>
+                <div class="sound-ring ring-3"></div>
+                <div class="sound-ring ring-4"></div>
+            </div>
+
+            <!-- Floating music note emojis -->
+            <div class="floating-notes">
+                <span class="fnote n1">🎵</span>
+                <span class="fnote n2">🎶</span>
+                <span class="fnote n3">🎸</span>
+                <span class="fnote n4">🥁</span>
+                <span class="fnote n5">🎹</span>
+                <span class="fnote n6">🎵</span>
+                <span class="fnote n7">🎶</span>
+                <span class="fnote n8">🎸</span>
+            </div>
+
+            <!-- Equalizer bars -->
+            <div class="eq-bars">
+                <div class="eq-bar b1"></div>
+                <div class="eq-bar b2"></div>
+                <div class="eq-bar b3"></div>
+                <div class="eq-bar b4"></div>
+                <div class="eq-bar b5"></div>
+                <div class="eq-bar b6"></div>
+                <div class="eq-bar b7"></div>
+                <div class="eq-bar b8"></div>
+                <div class="eq-bar b9"></div>
+                <div class="eq-bar b10"></div>
+                <div class="eq-bar b11"></div>
+                <div class="eq-bar b12"></div>
+            </div>
+
+            <div class="title-overlay">
+                <!-- Player info card -->
+                <div class="player-card" id="player-card">
+                    <span class="player-card-level" id="player-level">Lv 1</span>
+                    <span class="player-card-name" id="player-name">Player</span>
+                </div>
+
+                <h1 class="game-title">RHYTHM<br><span class="title-accent">BLAST</span></h1>
+
+                <div class="title-stats-row" id="title-stats-row">
+                    <span class="title-stars-badge" id="title-stars-badge">⭐ 0 Stars</span>
+                    <span class="title-streak-badge" id="title-streak-badge" style="display:none;"></span>
+                    <span class="title-achievement-count" id="title-achievement-count" style="display:none;"></span>
+                </div>
+
+                <div class="title-buttons">
+                    <button class="otb-btn title-play-btn" id="btn-play" aria-label="Play Game">
+                        <span class="play-icon">&#9654;</span> PLAY
+                    </button>
+                    <div class="title-row">
+                        <button class="otb-btn title-secondary-btn" id="btn-achievements" aria-label="View Achievements">&#127942; Trophies</button>
+                        <button class="otb-btn title-secondary-btn" id="btn-settings" aria-label="Open Settings">&#9881; Settings</button>
+                        <button class="otb-btn title-secondary-btn" id="btn-parent" aria-label="Parent Dashboard">&#128101; Parents</button>
+                    </div>
+                    <a id="hub-link" href="#" class="otb-btn otb-btn-small" style="display:none;opacity:0.5;text-decoration:none;">🎮 Hub</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Song Select Screen -->
+    <div id="screen-songs" class="screen">
+        <div class="screen-header">
+            <button class="otb-btn otb-btn-small btn-back" id="btn-songs-back">Back</button>
+            <h2>Choose a Song</h2>
+        </div>
+        <div class="songs-content">
+            <div class="songs-grid" id="songs-grid"></div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="screen-game" class="screen">
+        <canvas id="game-canvas"></canvas>
+        <div class="game-hud">
+            <div class="hud-left">
+                <button class="otb-btn otb-btn-small hud-back" id="btn-hud-back" aria-label="Exit Song">&#9664; Exit</button>
+                <span class="hud-score" id="hud-score" aria-live="polite">0</span>
+                <span class="hud-combo" id="hud-combo" aria-live="polite"></span>
+            </div>
+            <div class="hud-center">
+                <span class="hud-song-name" id="hud-song-name"></span>
+            </div>
+            <div class="hud-right">
+                <button class="otb-btn otb-btn-small hud-pause" id="btn-pause" aria-label="Pause Game">⏸</button>
+            </div>
+        </div>
+        <!-- Question prompt (shown above notes so kids can read the question) -->
+        <div class="question-prompt" id="question-prompt" style="display:none;" aria-live="polite"></div>
+        <!-- Lane answer labels (shown at the bottom of each lane) -->
+        <div class="lane-labels" id="lane-labels" style="display:none;">
+            <div class="lane-label" id="lane-label-0"></div>
+            <div class="lane-label" id="lane-label-1"></div>
+            <div class="lane-label" id="lane-label-2"></div>
+        </div>
+        <!-- Hit feedback overlay -->
+        <div class="hit-feedback" id="hit-feedback" aria-live="assertive"></div>
+        <!-- Countdown overlay -->
+        <div class="countdown-overlay" id="countdown" style="display:none;">
+            <span class="countdown-num" id="countdown-num">3</span>
+        </div>
+    </div>
+
+    <!-- Pause Overlay -->
+    <div id="pause-overlay" class="overlay" style="display:none;" role="dialog" aria-modal="true">
+        <div class="pause-panel otb-panel-solid">
+            <h2 class="otb-heading-gold">Paused</h2>
+            <button class="otb-btn otb-btn-primary" id="btn-resume">Resume</button>
+            <button class="otb-btn otb-btn-secondary" id="btn-quit">Quit Song</button>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="screen-results" class="screen">
+        <div class="results-content">
+            <h2 class="otb-heading-gold results-title" id="results-title">Song Complete!</h2>
+            <div class="otb-stars" id="results-stars"></div>
+            <div class="results-grade" id="results-grade"></div>
+            <div class="results-stats otb-panel" id="results-stats"></div>
+            <div class="results-xp" id="results-xp"></div>
+            <div class="results-buttons">
+                <button class="otb-btn otb-btn-primary" id="btn-replay">Replay</button>
+                <button class="otb-btn otb-btn-secondary" id="btn-songs-menu">Songs</button>
+                <button class="otb-btn otb-btn-small" id="btn-results-home">Home</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievements Screen -->
+    <div id="screen-achievements" class="screen">
+        <div class="screen-header">
+            <button class="otb-btn otb-btn-small btn-back" id="btn-achievements-back">Back</button>
+            <h2>Achievements</h2>
+        </div>
+        <div class="achievements-grid" id="achievements-grid"></div>
+    </div>
+
+    <!-- Settings Screen -->
+    <div id="screen-settings" class="screen">
+        <div class="screen-header">
+            <button class="otb-btn otb-btn-small btn-back" id="btn-settings-back">Back</button>
+            <h2>Settings</h2>
+        </div>
+        <div class="settings-content">
+            <div class="otb-settings-group">
+                <div class="otb-settings-item on" id="setting-sfx" data-setting="sfx" role="switch" aria-checked="true" aria-label="Sound Effects" tabindex="0">
+                    <div class="otb-settings-item-info">
+                        <span class="otb-settings-icon" aria-hidden="true">🔊</span>
+                        <div>
+                            <div class="otb-settings-label">Sound Effects</div>
+                            <div class="otb-settings-desc">Hit sounds and feedback</div>
+                        </div>
+                    </div>
+                    <div class="otb-toggle-track on"><div class="otb-toggle-thumb"></div></div>
+                </div>
+                <div class="otb-settings-item on" id="setting-music" data-setting="music" role="switch" aria-checked="true" aria-label="Background Music" tabindex="0">
+                    <div class="otb-settings-item-info">
+                        <span class="otb-settings-icon" aria-hidden="true">🎵</span>
+                        <div>
+                            <div class="otb-settings-label">Background Music</div>
+                            <div class="otb-settings-desc">Song backing tracks</div>
+                        </div>
+                    </div>
+                    <div class="otb-toggle-track on"><div class="otb-toggle-thumb"></div></div>
+                </div>
+                <div class="otb-settings-item on" id="setting-voice" data-setting="voice" role="switch" aria-checked="true" aria-label="Voice Read Aloud" tabindex="0">
+                    <div class="otb-settings-item-info">
+                        <span class="otb-settings-icon" aria-hidden="true">🗣️</span>
+                        <div>
+                            <div class="otb-settings-label">Voice (Read Aloud)</div>
+                            <div class="otb-settings-desc">Words spoken for reading notes</div>
+                        </div>
+                    </div>
+                    <div class="otb-toggle-track on"><div class="otb-toggle-thumb"></div></div>
+                </div>
+            </div>
+            <div class="otb-settings-group">
+                <div class="otb-settings-item" style="cursor:default;">
+                    <div class="otb-settings-item-info">
+                        <span class="otb-settings-icon">🎯</span>
+                        <div>
+                            <div class="otb-settings-label">Difficulty</div>
+                            <div class="otb-settings-desc">Note speed and timing tolerance</div>
+                        </div>
+                    </div>
+                    <div class="difficulty-selector" id="difficulty-selector">
+                        <button class="diff-btn active" data-diff="easy" aria-label="Easy difficulty">Easy</button>
+                        <button class="diff-btn" data-diff="normal" aria-label="Normal difficulty">Normal</button>
+                        <button class="diff-btn" data-diff="hard" aria-label="Hard difficulty">Hard</button>
+                    </div>
+                </div>
+            </div>
+            <div class="otb-about">
+                <div class="otb-about-text">Part of the Blake Boys Gaming family</div>
+                <div class="otb-about-version">Rhythm Blast v1.1</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parent Dashboard -->
+    <div id="screen-parent" class="screen">
+        <div class="screen-header">
+            <button class="otb-btn otb-btn-small btn-back" id="btn-parent-back">Back</button>
+            <h2>Parent Dashboard</h2>
+        </div>
+        <div class="parent-content">
+            <div class="otb-parent-lock" id="parent-lock">
+                <div class="otb-parent-lock-text">Solve to unlock:</div>
+                <div class="otb-parent-lock-math" id="parent-math"></div>
+                <input type="number" class="otb-parent-lock-input" id="parent-answer" inputmode="numeric">
+                <button class="otb-btn otb-btn-primary otb-btn-small" id="btn-parent-unlock">Unlock</button>
+            </div>
+            <div class="parent-dashboard" id="parent-dashboard" style="display:none;">
+                <div class="otb-dashboard-section">
+                    <h3>Session Summary</h3>
+                    <div id="parent-stats"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/math-data.js"></script>
+    <script src="js/reading-data.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/song-data.js"></script>
+    <script src="js/note-generator.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/progress.js"></script>
+    <script src="js/otb-config.js"></script>
+    <script src="js/ecosystem.js"></script>
+    <script src="js/achievements.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const h=document.getElementById('hub-link');if(h)h.href=u;const l=document.getElementById('bbg-logo-link');if(l)l.href=u;}
+        if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+    </script>
+</body>
+</html>

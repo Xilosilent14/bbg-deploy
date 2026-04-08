@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="screen-orientation" content="landscape">
+    <title>Think Fast — The Michigan Road Race</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self';">
+    <link rel="stylesheet" href="css/shared/design-system.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Unified OTB splash screen with game-specific car animation -->
+    <div id="splash-loading" class="otb-splash">
+        <div class="otb-splash-badge">Blake Boys Gaming</div>
+        <!-- Road line the car drives on -->
+        <div style="position: absolute; bottom: 38%; left: 0; width: 100%; height: 3px; background: repeating-linear-gradient(90deg, rgba(255,255,255,0.3) 0px, rgba(255,255,255,0.3) 20px, transparent 20px, transparent 40px);"></div>
+        <!-- Animated car driving across -->
+        <div style="position: absolute; bottom: calc(38% + 4px); font-size: 2.5rem; animation: splash-car-drive 2.5s ease-in-out infinite;">&#x1F3CE;&#xFE0F;</div>
+        <div class="otb-splash-title" style="text-shadow: 0 0 20px rgba(233,69,96,0.5);">THINK FAST</div>
+        <div class="otb-splash-subtitle">Loading...</div>
+        <div class="otb-splash-loader">
+            <div class="otb-splash-loader-fill"></div>
+        </div>
+    </div>
+    <style>
+        @keyframes splash-car-drive {
+            0% { left: -10%; }
+            100% { left: 105%; }
+        }
+    </style>
+
+    <!-- V28: Offline indicator banner -->
+    <div id="offline-banner" style="
+        display: none;
+        position: fixed; top: 0; left: 0; width: 100%; z-index: 9998;
+        background: linear-gradient(90deg, #ff9800, #f57c00);
+        color: #fff; text-align: center;
+        padding: 6px 16px; font-size: 0.85rem; font-weight: 700;
+        font-family: 'Segoe UI', sans-serif;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        animation: offline-slide-in 0.3s ease;
+    ">
+        📡 Playing offline — progress saves locally!
+    </div>
+    <style>
+        @keyframes offline-slide-in {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+    </style>
+
+    <div id="game-container" role="main">
+        <!-- Title Screen -->
+        <div id="screen-title" class="screen active">
+            <div class="otb-badge" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:15;">Blake Boys Gaming</div>
+            <a id="bbg-logo-link" href="#" class="bbg-corner-logo-link" aria-label="Return to Hub"><img src="assets/bbg-logo.png" alt="BBG" class="bbg-corner-logo"></a>
+            <div class="title-bg">
+                <div class="title-level-badge" id="title-level-badge"></div>
+                <div class="zelda-title-row">
+                    <img src="assets/title-flag.png" alt="" class="title-icon-left" aria-hidden="true">
+                    <div class="zelda-title-center">
+                        <h1 class="game-title">THINK<br><span class="title-accent">FAST</span></h1>
+                        <div class="title-subtitle">The Michigan Road Race</div>
+                    </div>
+                    <img src="assets/title-flag.png" alt="" class="title-icon-right" aria-hidden="true">
+                </div>
+                <div class="title-streak" id="title-streak"></div>
+                <div class="title-daily" id="title-daily"></div>
+                <div class="title-corvette" id="title-car"></div>
+                <div class="title-buttons">
+                    <button class="btn btn-quick-race btn-large" id="btn-quick-race" aria-label="Quick Race">
+                        <span class="btn-icon" aria-hidden="true">🚀</span> Quick Race
+                    </button>
+                    <button class="btn btn-primary btn-large" id="btn-math-race" data-subject="math" aria-label="Start Math Race">
+                        <span class="btn-icon" aria-hidden="true">🔢</span> Math Race
+                    </button>
+                    <button class="btn btn-secondary btn-large" id="btn-reading-race" data-subject="reading" aria-label="Start Reading Race">
+                        <span class="btn-icon" aria-hidden="true">📖</span> Reading Race
+                    </button>
+                </div>
+                <div class="title-bottom-buttons">
+                    <button class="btn btn-small" id="btn-garage" aria-label="Open Garage">🏎️ Garage</button>
+                    <button class="btn btn-small" id="btn-map" aria-label="View Road Trip Map">🗺️ Road Trip</button>
+                </div>
+                <div class="title-parent-buttons">
+                    <button class="btn btn-small" id="btn-settings" aria-label="Open Settings">⚙️ Settings</button>
+                    <button class="btn btn-small" id="btn-parent" aria-label="Parent Dashboard">👤 Parents</button>
+                    <a id="hub-link" href="#" class="btn btn-small" style="display:none;opacity:0.5;text-decoration:none;margin-top:4px;" aria-label="Return to Hub">🎮 Hub</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Road Trip Map Screen (V24: Story Mode integrated) -->
+        <div id="screen-map" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-map-back">← Back</button>
+                <h2>🗺️ The Michigan Road Race</h2>
+            </div>
+            <!-- V24: Story mode tabs -->
+            <div class="story-tabs" role="tablist" aria-label="Map view">
+                <button class="story-tab story-tab-active" id="tab-story" data-tab="story" role="tab" aria-selected="true">🚗 Road Trip</button>
+                <button class="story-tab" id="tab-tracks" data-tab="tracks" role="tab" aria-selected="false">🏁 Tracks</button>
+            </div>
+            <!-- Story Mode panel -->
+            <div class="story-panel" id="story-panel">
+                <div class="story-landmarks" id="story-landmarks"></div>
+                <div class="story-chapters" id="story-chapters"></div>
+            </div>
+            <!-- Original track map panel (hidden by default) -->
+            <div class="story-panel" id="tracks-panel" style="display:none;">
+                <div class="map-container" id="map-container"></div>
+            </div>
+        </div>
+
+        <!-- V24: Story Card Overlay (shown between story races) -->
+        <div id="story-card-overlay" class="story-card-overlay" style="display:none;">
+            <div class="story-card">
+                <div class="story-card-icon" id="story-card-icon"></div>
+                <div class="story-card-text" id="story-card-text"></div>
+                <button class="btn btn-primary story-card-btn" id="story-card-btn">🏎️ Drive!</button>
+            </div>
+        </div>
+
+        <!-- Topic Select Screen -->
+        <div id="screen-topics" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-topics-back">← Back</button>
+                <h2 id="topics-title">Choose Your Challenge</h2>
+            </div>
+            <div class="topics-grid" id="topics-grid" aria-live="polite"></div>
+        </div>
+
+        <!-- Racing Screen -->
+        <div id="screen-race" class="screen">
+            <canvas id="race-canvas" tabindex="0" aria-label="Racing game - use arrow keys or W/S to change lanes"></canvas>
+            <!-- V5.8: Pause button -->
+            <button class="btn-pause" id="btn-pause" aria-label="Pause race">⏸</button>
+            <div class="pause-overlay" id="pause-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Race paused">
+                <div class="pause-box">
+                    <h2>PAUSED</h2>
+                    <button class="btn btn-primary btn-large" id="btn-resume">▶ Resume</button>
+                    <button class="btn btn-secondary" id="btn-quit-race">🏠 Quit Race</button>
+                </div>
+            </div>
+            <div class="race-hud">
+                <div class="hud-position" id="hud-position" role="status" aria-live="polite" aria-atomic="true">Position: 1st</div>
+                <div class="hud-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="hud-progress-fill"></div>
+                        <div class="progress-player-dot" id="hud-player-dot"></div>
+                        <div class="progress-opp-dot" id="hud-opp-dot-0"></div>
+                        <div class="progress-opp-dot" id="hud-opp-dot-1"></div>
+                        <div class="progress-opp-dot" id="hud-opp-dot-2"></div>
+                    </div>
+                    <span id="hud-question-count" role="status" aria-live="polite" aria-label="Questions answered">0/8</span>
+                </div>
+                <div class="hud-streak" id="hud-streak" aria-live="polite"></div>
+            </div>
+            <div class="hud-powerup" id="hud-powerup" style="display:none;"></div>
+            <div class="hud-coins" id="hud-coins">🪙 0</div>
+            <div class="question-overlay" id="question-overlay" style="display:none;" role="dialog" aria-label="Question">
+                <div class="question-box">
+                    <div class="question-text" id="question-text" aria-live="polite"></div>
+                    <button class="btn-speaker" id="btn-replay-question" title="Hear again" aria-label="Hear question again">🔊</button>
+                    <div class="answers-grid" id="answers-grid"></div>
+                    <div class="explanation-bubble" id="explanation-bubble" style="display:none;" aria-live="polite" role="alert"></div>
+                </div>
+            </div>
+            <div class="race-feedback" id="race-feedback" style="display:none;" role="status" aria-live="assertive"></div>
+            <!-- V21: Arrow pad for lane changes (touch-friendly for kids) -->
+            <div class="arrow-pad" id="arrow-pad">
+                <button class="arrow-btn arrow-up" id="arrow-up" aria-label="Move up">&#9650;</button>
+                <button class="arrow-btn arrow-down" id="arrow-down" aria-label="Move down">&#9660;</button>
+            </div>
+            <!-- V4: Tutorial overlay -->
+            <div class="tutorial-overlay" id="tutorial-overlay" style="display:none;"></div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="screen-results" class="screen">
+            <div class="results-content">
+                <h2 class="results-title" id="results-title">Race Complete!</h2>
+                <div class="results-stars" id="results-stars" aria-live="polite"></div>
+                <div class="results-stats" id="results-stats" aria-live="polite"></div>
+                <div class="results-level-up" id="results-level-up" style="display:none;" aria-live="assertive"></div>
+                <div class="results-achievements" id="results-achievements" style="display:none;" aria-live="polite"></div>
+                <div id="results-break-suggestion" style="display:none;"></div>
+                <div class="results-buttons">
+                    <button class="btn btn-primary btn-large" id="btn-race-again" aria-label="Race again with new topic">🏁 Race Again</button>
+                    <button class="btn-same-race" id="btn-same-race" aria-label="Race again with same topic">🔄 Same Race Again</button>
+                    <button class="btn btn-secondary btn-large" id="btn-results-menu" aria-label="Return to menu">🏠 Menu</button>
+                </div>
+            </div>
+            <canvas id="celebration-canvas" aria-hidden="true"></canvas>
+        </div>
+
+        <!-- Garage Screen (V4: added cars tab) -->
+        <div id="screen-garage" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-garage-back">← Back</button>
+                <h2>🏎️ My Garage</h2>
+                <div class="star-count" id="garage-stars">⭐ 0</div>
+            </div>
+            <div class="garage-tabs" role="tablist" aria-label="Garage sections">
+                <button class="garage-tab active" id="tab-colors" data-tab="colors" role="tab" aria-selected="true">🎨 Colors</button>
+                <button class="garage-tab" id="tab-cars" data-tab="cars" role="tab" aria-selected="false">🚗 Cars</button>
+                <button class="garage-tab" id="tab-upgrades" data-tab="upgrades" role="tab" aria-selected="false">⚡ Upgrades</button>
+                <button class="garage-tab" id="tab-mods" data-tab="mods" role="tab" aria-selected="false">🎮 Mods</button>
+                <button class="garage-tab" id="tab-achievements" data-tab="achievements" role="tab" aria-selected="false">🏆 Trophies</button>
+            </div>
+            <div class="garage-content">
+                <div class="garage-preview" id="garage-preview"></div>
+                <div class="garage-panel" id="garage-panel">
+                    <div class="garage-options" id="garage-options"></div>
+                    <div class="garage-cars" id="garage-cars" style="display:none;"></div>
+                    <div class="garage-upgrades" id="garage-upgrades" style="display:none;"></div>
+                    <div class="garage-mods" id="garage-mods" style="display:none;"></div>
+                    <div class="garage-achievements" id="garage-achievements" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- V4: Settings Screen -->
+        <div id="screen-settings" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-settings-back">← Back</button>
+                <h2>⚙️ Settings</h2>
+            </div>
+            <div class="settings-content">
+                <div class="settings-group">
+                    <div class="settings-item" id="toggle-sound" role="switch" aria-checked="true" tabindex="0" aria-label="Sound Effects">
+                        <div class="settings-item-info">
+                            <div class="settings-item-icon">🔊</div>
+                            <div>
+                                <div class="settings-item-label">Sound Effects</div>
+                                <div class="settings-item-desc">Button clicks, correct/wrong sounds, power-ups</div>
+                            </div>
+                        </div>
+                        <div class="settings-toggle">
+                            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                            <span class="toggle-status">ON</span>
+                        </div>
+                    </div>
+                    <div class="settings-item" id="toggle-music" role="switch" aria-checked="true" tabindex="0" aria-label="Background Music">
+                        <div class="settings-item-info">
+                            <div class="settings-item-icon">🎵</div>
+                            <div>
+                                <div class="settings-item-label">Background Music</div>
+                                <div class="settings-item-desc">Menu and racing music</div>
+                            </div>
+                        </div>
+                        <div class="settings-toggle">
+                            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                            <span class="toggle-status">ON</span>
+                        </div>
+                    </div>
+                    <div class="settings-item" id="toggle-voice" role="switch" aria-checked="true" tabindex="0" aria-label="Voice Read Aloud">
+                        <div class="settings-item-info">
+                            <div class="settings-item-icon">🗣️</div>
+                            <div>
+                                <div class="settings-item-label">Voice / Read Aloud</div>
+                                <div class="settings-item-desc">Questions and encouragement read aloud</div>
+                            </div>
+                        </div>
+                        <div class="settings-toggle">
+                            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                            <span class="toggle-status">ON</span>
+                        </div>
+                    </div>
+                    <div class="settings-item" id="toggle-contrast" role="switch" aria-checked="false" tabindex="0" aria-label="High Contrast Mode">
+                        <div class="settings-item-info">
+                            <div class="settings-item-icon">🔲</div>
+                            <div>
+                                <div class="settings-item-label">High Contrast</div>
+                                <div class="settings-item-desc">Thicker borders and bolder text</div>
+                            </div>
+                        </div>
+                        <div class="settings-toggle">
+                            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                            <span class="toggle-status">OFF</span>
+                        </div>
+                    </div>
+                    <!-- V34: Tilt controls toggle (hidden if device doesn't support it) -->
+                    <div class="settings-item" id="toggle-tilt" role="switch" aria-checked="false" tabindex="0" aria-label="Tilt Controls" style="display:none;">
+                        <div class="settings-item-info">
+                            <div class="settings-item-icon">📱</div>
+                            <div>
+                                <div class="settings-item-label">Tilt Controls</div>
+                                <div class="settings-item-desc">Tilt your tablet to change lanes</div>
+                            </div>
+                        </div>
+                        <div class="settings-toggle">
+                            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                            <span class="toggle-status">OFF</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-hint">Swipe up/down on the track or use arrow keys to change lanes!</div>
+                <div class="settings-group" id="settings-grade" style="margin-top:12px;">
+                    <div class="settings-item-label" style="padding:8px 12px;color:#ffd700;font-size:0.9rem;">🎓 Grade Level</div>
+                    <div style="padding:4px 12px 12px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn grade-btn" data-grade="prek" id="grade-prek">Pre-K</button>
+                        <button class="btn grade-btn" data-grade="k" id="grade-k">Kindergarten</button>
+                        <button class="btn grade-btn" data-grade="1st" id="grade-1st">1st Grade</button>
+                        <button class="btn grade-btn" data-grade="2nd" id="grade-2nd">2nd Grade</button>
+                        <button class="btn grade-btn" data-grade="3rd" id="grade-3rd">3rd Grade</button>
+                    </div>
+                </div>
+                <div class="settings-group" id="settings-difficulty" style="margin-top:12px;">
+                    <div class="settings-item-label" style="padding:8px 12px;color:#ffd700;font-size:0.9rem;">📊 Current Difficulty Levels</div>
+                    <div id="difficulty-display" style="padding:4px 12px 12px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parent Dashboard Screen -->
+        <div id="screen-parent" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-parent-back">← Back</button>
+                <h2>📊 Parent Dashboard</h2>
+            </div>
+            <div class="parent-content" id="parent-content"></div>
+        </div>
+
+        <!-- First-Time Welcome Overlay -->
+        <div id="welcome-overlay" class="welcome-overlay" style="display:none">
+            <div class="welcome-card">
+                <div class="welcome-car-emoji">🏎️</div>
+                <h1 class="welcome-title">Welcome, Racer!</h1>
+                <p class="welcome-text">What's your name?</p>
+                <input type="text" id="welcome-name" class="welcome-input" placeholder="Type your name..." maxlength="20" autocomplete="off">
+                <div class="welcome-grade-pick">
+                    <p class="welcome-text">How old are you?</p>
+                    <div class="welcome-grade-buttons">
+                        <button class="btn btn-welcome-grade" data-grade="prek">3-4<br><small>Pre-K</small></button>
+                        <button class="btn btn-welcome-grade" data-grade="k">5-6<br><small>Kinder</small></button>
+                        <button class="btn btn-welcome-grade" data-grade="1st">6-7<br><small>1st Grade</small></button>
+                        <button class="btn btn-welcome-grade" data-grade="2nd">7-8<br><small>2nd Grade</small></button>
+                        <button class="btn btn-welcome-grade" data-grade="3rd">8-9<br><small>3rd Grade</small></button>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-large" id="btn-welcome-go" style="display:none">
+                    <span class="btn-icon">🚀</span> Let's Race!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/settings.js"></script>
+    <script src="js/progress.js"></script>
+    <script src="js/adaptive.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/math-data.js"></script>
+    <script src="js/reading-data.js"></script>
+    <!-- V33: Custom PIN modal (replaces native prompt) -->
+    <div class="pin-overlay" id="pin-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Parent verification">
+        <div class="pin-box">
+            <h3 id="pin-question">What is 10 + 10?</h3>
+            <input type="number" class="pin-input" id="pin-answer" maxlength="3" inputmode="numeric" autocomplete="off" aria-label="Answer">
+            <div class="pin-buttons">
+                <button class="btn btn-primary" id="btn-pin-submit">Check</button>
+                <button class="btn btn-secondary" id="btn-pin-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/questions.js"></script>
+    <script src="js/tutorial.js"></script>
+    <script src="js/car-data.js"></script>
+    <script src="js/cars.js"></script>
+    <script src="js/game-renderer.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/celebration.js"></script>
+    <script src="js/achievements.js"></script>
+    <script src="js/garage.js"></script>
+    <script src="js/parent-dashboard.js"></script>
+    <script src="js/story.js"></script>
+    <script src="js/otb-config.js"></script>
+    <script src="js/ecosystem.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const h=document.getElementById('hub-link');if(h)h.href=u;const l=document.getElementById('bbg-logo-link');if(l)l.href=u;}
+        if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+        // PWA install prompt
+        let _deferredInstall;
+        window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); _deferredInstall = e; });
+    </script>
+</body>
+</html>

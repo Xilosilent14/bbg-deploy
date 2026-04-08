@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#ff7518">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self';">
+  <title>Jack's Potion Lab</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/shared/design-system.css">
+  <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+
+  <!-- ===== SPLASH ===== -->
+  <div id="screen-splash" class="screen active">
+    <div class="otb-splash-badge">Blake Boys Gaming</div>
+    <div class="splash-stars"></div>
+    <div class="splash-moon"></div>
+    <div class="splash-title-wrap">
+      <div class="splash-jack-silhouette"></div>
+      <h1 class="splash-title">Jack's<br>Potion Lab</h1>
+      <p class="splash-sub">Brew magical potions!</p>
+    </div>
+    <div class="splash-loader">
+      <div class="splash-loader-fill"></div>
+    </div>
+  </div>
+
+  <!-- ===== MENU ===== -->
+  <div id="screen-menu" class="screen">
+    <canvas id="menu-canvas"></canvas>
+    <div class="otb-badge" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:15;">Blake Boys Gaming</div>
+    <a id="bbg-logo-link" href="#" class="bbg-corner-logo-link" aria-label="Return to Hub"><img src="assets/bbg-logo.png" alt="BBG" class="bbg-corner-logo"></a>
+    <div class="menu-overlay">
+      <div class="menu-brand">
+        <span class="menu-logo">🧪</span>
+        <h1 class="menu-title">Jack's Potion Lab</h1>
+        <p class="menu-player-name" id="menu-player">Hi, Asher!</p>
+        <p class="menu-grade-label" id="menu-grade"></p>
+      </div>
+      <div class="menu-shelf" id="menu-shelf">
+        <!-- Potion collection shelf rendered here -->
+      </div>
+      <div class="menu-actions">
+        <button class="btn-play" id="btn-play">
+          <span class="btn-play-icon">🧪</span>
+          Brew Potions!
+        </button>
+        <button class="btn-secondary" id="btn-settings-menu">⚙️ Settings</button>
+        <button class="btn-secondary" id="btn-dashboard">📊 Progress</button>
+        <button class="btn-secondary" id="btn-hub-home" style="display:none" onclick="if(typeof OTBConfig!=='undefined')window.location.href=OTBConfig.getHubUrl()">🏠 Hub</button>
+      </div>
+      <div class="menu-progress" id="menu-progress">
+        <span id="menu-potions-count">0</span> potions collected
+        <span class="menu-streak-badge" id="menu-streak-badge" style="display:none;"></span>
+        <span class="menu-achievement-count" id="menu-achievement-count" style="display:none;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== GAME ===== -->
+  <div id="screen-game" class="screen">
+    <!-- Canvas: background, characters, cauldron, particles -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- HUD -->
+    <div class="game-hud">
+      <div class="hud-left">
+        <button class="hud-btn" id="btn-menu" aria-label="Return to menu">🏠</button>
+        <div class="hud-potions">
+          <span id="hud-potion-icon">🧪</span>
+          <span id="hud-potion-count">0 / 5</span>
+        </div>
+      </div>
+      <div class="hud-center">
+        <div id="hud-title">Jack's Potion Lab</div>
+        <div class="hud-grade-badge" id="hud-grade"></div>
+      </div>
+      <div class="hud-right">
+        <div class="hud-streak" id="hud-streak"></div>
+        <button class="hud-btn" id="btn-settings-game" aria-label="Open settings">⚙️</button>
+      </div>
+    </div>
+
+    <!-- Question area (top center) -->
+    <div class="question-area" id="question-area">
+      <div class="question-prompt" id="question-prompt" aria-live="polite"></div>
+    </div>
+
+    <!-- Ingredient options -->
+    <div class="ingredients-area" id="ingredients-area" aria-live="polite"></div>
+
+    <!-- Count display (for count questions) -->
+    <div class="count-display" id="count-display" style="display:none;"></div>
+
+    <!-- Sally hint -->
+    <div class="sally-hint" id="sally-hint" style="display:none;" aria-live="polite">
+      <div class="sally-bubble" id="sally-bubble"></div>
+    </div>
+
+    <!-- Wrong answer feedback (Lock/Shock/Barrel) -->
+    <div class="wrong-feedback" id="wrong-feedback" style="display:none;" aria-live="assertive" role="alert">
+      <span>Ha! Try again!</span>
+    </div>
+  </div>
+
+  <!-- ===== POTION COMPLETE ===== -->
+  <div id="screen-potion" class="screen">
+    <canvas id="potion-canvas"></canvas>
+    <div class="potion-complete-wrap">
+      <div class="potion-complete-icon" id="potion-icon">🧪</div>
+      <h2 class="potion-complete-name" id="potion-name">Ghost Glow</h2>
+      <p class="potion-complete-msg">Magnificent! You brewed it!</p>
+      <div class="potion-complete-count" id="potion-complete-count">Potion 1 of 24</div>
+      <button class="btn-play" id="btn-next-potion">Keep Brewing! 🧪</button>
+      <button class="btn-secondary" id="btn-potion-home" style="margin-top:10px;padding:8px 20px;font-size:0.85rem;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:20px;color:#ccc;cursor:pointer;">🏠 Back to Menu</button>
+    </div>
+  </div>
+
+  <!-- ===== SHELF (collection view) ===== -->
+  <div id="screen-shelf" class="screen">
+    <div class="shelf-header">
+      <button class="hud-btn" id="btn-shelf-back" aria-label="Back to menu">← Back</button>
+      <h2 class="shelf-title">Jack's Shelf</h2>
+      <p class="shelf-subtitle" id="shelf-count-label">0 of 24 potions collected</p>
+    </div>
+    <div class="shelf-grid" id="shelf-grid"></div>
+  </div>
+
+  <!-- ===== SESSION COMPLETE ===== -->
+  <div id="screen-session" class="screen">
+    <canvas id="session-canvas"></canvas>
+    <div class="session-wrap">
+      <div class="session-title">Amazing, Asher!</div>
+      <div class="session-jack">🎃</div>
+      <p class="session-msg" id="session-msg">You brewed 5 potions!</p>
+      <div class="session-potions" id="session-potions"></div>
+      <button class="btn-play" id="btn-keep-going">Keep Going!</button>
+      <button class="btn-secondary" id="btn-session-menu">🏠 Home</button>
+    </div>
+  </div>
+
+  <!-- ===== PARENT DASHBOARD ===== -->
+  <div id="parent-dashboard" class="modal-overlay" style="display:none;">
+    <div class="modal modal-wide">
+      <div class="dash-header">
+        <h2 class="modal-title">📊 Asher's Progress</h2>
+        <button class="btn-secondary dash-close" id="btn-dash-close">Close</button>
+      </div>
+      <div class="dash-summary" id="dash-summary"></div>
+      <div class="dash-grid" id="dash-grid"></div>
+    </div>
+  </div>
+
+  <!-- ===== SETTINGS MODAL ===== -->
+  <div id="settings-modal" class="modal-overlay" style="display:none;">
+    <div class="modal">
+      <h2 class="modal-title">⚙️ Settings</h2>
+      <div class="setting-row">
+        <label>Music</label>
+        <button class="toggle-btn" id="toggle-music" data-on="true" role="switch" aria-checked="true" aria-label="Toggle music">ON</button>
+      </div>
+      <div class="setting-row">
+        <label>Sound Effects</label>
+        <button class="toggle-btn" id="toggle-sfx" data-on="true" role="switch" aria-checked="true" aria-label="Toggle sound effects">ON</button>
+      </div>
+      <div class="setting-row">
+        <label>Jack's Voice</label>
+        <button class="toggle-btn" id="toggle-tts" data-on="true" role="switch" aria-checked="true" aria-label="Toggle voice">ON</button>
+      </div>
+      <div class="setting-row">
+        <label>Player Name</label>
+        <input type="text" id="player-name-input" class="name-input" value="Asher" maxlength="12">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-play" id="btn-settings-save">Save</button>
+        <button class="btn-secondary" id="btn-settings-close">Close</button>
+      </div>
+      <div class="setting-row setting-danger">
+        <label>Reset Progress</label>
+        <button class="btn-danger" id="btn-reset">Reset All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== UNLOCK CELEBRATION ===== -->
+  <div id="unlock-modal" class="modal-overlay" style="display:none;">
+    <div class="modal unlock-modal-inner">
+      <div class="unlock-icon" id="unlock-icon">🎉</div>
+      <h2 class="unlock-title" id="unlock-title">New Unlock!</h2>
+      <p class="unlock-body" id="unlock-body"></p>
+      <button class="btn-play" id="btn-unlock-close">Let's go!</button>
+    </div>
+  </div>
+
+  <!-- ===== PARENTAL GATE ===== -->
+  <div id="parental-gate" class="modal-overlay" style="display:none;">
+    <div class="modal">
+      <h2 class="modal-title">👋 Parent Check</h2>
+      <p class="modal-body">Type the answer to exit:</p>
+      <p class="gate-question" id="gate-question">What is 3 + 4?</p>
+      <input type="number" id="gate-answer" class="name-input" placeholder="Your answer">
+      <div class="modal-actions">
+        <button class="btn-play" id="btn-gate-submit">OK</button>
+        <button class="btn-secondary" id="btn-gate-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/otb-config.js"></script>
+  <script src="js/ecosystem.js"></script>
+  <script src="data/potions.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/progress.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/achievements.js"></script>
+  <script src="js/main.js"></script>
+  <script>if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const l=document.getElementById('bbg-logo-link');if(l)l.href=u;}</script>
+</body>
+</html>

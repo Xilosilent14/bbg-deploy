@@ -23,7 +23,8 @@ const Audio = {
     _musicNodes: [],
     _musicGain: null,
 
-    // V29: Pick a warm female English voice (midwestern mom feel)
+    // V29/V37: Pick a warm female English voice (midwestern mom feel)
+    // V37: Added Fire tablet / Android Silk voice support
     _pickVoice() {
         if (this._preferredVoice) return this._preferredVoice;
         if (!this.synth || !this.synth.getVoices) return null;
@@ -34,15 +35,21 @@ const Audio = {
         const en = voices.filter(v => /^en[-_]/i.test(v.lang));
 
         // Preferred female voices ranked by warmth/naturalness
+        // V37: Added Android/Fire tablet voices (en-us-x-sfg = female, tpd = female)
         const preferred = [
-            'samantha',           // macOS/iOS — warm, natural female
-            'microsoft zira',     // Windows — friendly female US English
-            'google us english',  // Chrome — clear female
-            'microsoft aria',     // Windows 11 — natural female
-            'microsoft jenny',    // Windows 11 neural — warm female
-            'karen',              // macOS — Australian but warm female
-            'fiona',              // macOS — British female
-            'tessa',              // macOS — South African female
+            'samantha',                 // macOS/iOS — warm, natural female
+            'microsoft zira',           // Windows — friendly female US English
+            'google us english',        // Chrome — clear female
+            'microsoft aria',           // Windows 11 — natural female
+            'microsoft jenny',          // Windows 11 neural — warm female
+            'en-us-x-sfg-local',        // Android/Fire — female US English (high quality)
+            'en-us-x-tpd-local',        // Android/Fire — female US English (alt)
+            'en-us-x-sfg-network',      // Android/Fire — female US English (network)
+            'en-us-x-tpd-network',      // Android/Fire — female US English (network alt)
+            'english united states',    // Android/Silk generic — often the default female
+            'karen',                    // macOS — Australian but warm female
+            'fiona',                    // macOS — British female
+            'tessa',                    // macOS — South African female
         ];
 
         for (const pref of preferred) {
@@ -55,6 +62,10 @@ const Audio = {
         const female = en.find(v => /female/i.test(v.name));
         if (female) { this._preferredVoice = female; return female; }
 
+        // V37: On Android/Fire, prefer local voices over network (lower latency)
+        const localEn = en.find(v => v.localService);
+        if (localEn) { this._preferredVoice = localEn; return localEn; }
+
         // Last resort: first English voice available
         if (en.length) { this._preferredVoice = en[0]; return en[0]; }
         return null;
@@ -63,12 +74,13 @@ const Audio = {
     // ===== V35: PROSODY ENGINE — Humanize TTS narrator =====
 
     // Named voice personality profiles
+    // V37: Reduced pitch by ~0.05 across profiles for more natural sound on Fire/Silk
     VOICE_PROFILES: {
-        question: { rate: 0.88, pitch: 1.1 },   // clear, patient, teacher-like
-        excited:  { rate: 1.05, pitch: 1.25 },   // celebratory, not shrill
-        gentle:   { rate: 0.92, pitch: 1.05 },   // comforting for wrong answers
-        explain:  { rate: 0.82, pitch: 1.0 },    // slower, clearer for explanations
-        neutral:  { rate: 0.9,  pitch: 1.1 }     // default
+        question: { rate: 0.88, pitch: 1.05 },   // clear, patient, teacher-like
+        excited:  { rate: 1.05, pitch: 1.2 },    // celebratory, not shrill
+        gentle:   { rate: 0.92, pitch: 1.0 },    // comforting for wrong answers
+        explain:  { rate: 0.82, pitch: 0.95 },   // slower, clearer for explanations
+        neutral:  { rate: 0.9,  pitch: 1.05 }    // default
     },
 
     // Warm lead-in phrases (~30% chance, question context only)
@@ -209,18 +221,41 @@ const Audio = {
 
             this.synth.speak(utterance);
 
-            // V21: Chrome/Android bug — speechSynthesis.speaking can be false right after speak()
-            // V36 fix: Check generation to prevent zombie resurrection of cancelled utterances
-            setTimeout(() => {
-                if (!resolved && gen === this._speakGen && this.synth && !this.synth.speaking && !this.synth.pending) {
+            // V21/V37: Chrome/Android bug — speechSynthesis.speaking can be false right after speak()
+            // V37: Escalating retry: 200ms (re-speak), 600ms (cancel+re-speak), 1200ms (rebuild utterance)
+            const retryDelays = [200, 600, 1200];
+            const retryTimers = retryDelays.map((delay, i) => setTimeout(() => {
+                if (resolved || gen !== this._speakGen) return;
+                if (this.synth && !this.synth.speaking && !this.synth.pending) {
                     try {
-                        this.synth.speak(utterance);
+                        if (i >= 1) {
+                            // More aggressive: cancel first, then re-speak
+                            this.synth.cancel();
+                        }
+                        if (i >= 2) {
+                            // Last resort: rebuild utterance with fresh voice selection
+                            this._preferredVoice = null;
+                            const freshVoice = this._pickVoice();
+                            const retry = new SpeechSynthesisUtterance(prosody.text);
+                            if (freshVoice) retry.voice = freshVoice;
+                            retry.rate = prosody.rate;
+                            retry.pitch = prosody.pitch;
+                            retry.volume = options.volume || 1;
+                            retry.onend = done;
+                            retry.onerror = done;
+                            this.synth.speak(retry);
+                        } else {
+                            this.synth.speak(utterance);
+                        }
                     } catch (e) { /* ignore */ }
                 }
-            }, 200);
+            }, delay));
 
             // V17: Timeout fallback if speech synthesis hangs (common on Android/Silk)
-            const timeout = setTimeout(done, 10000);
+            const timeout = setTimeout(() => {
+                retryTimers.forEach(t => clearTimeout(t));
+                done();
+            }, 10000);
         });
     },
 
@@ -1375,7 +1410,7 @@ const Audio = {
         }
     },
 
-    // V21: Unlock speechSynthesis on mobile (must be called from user gesture)
+    // V21/V37: Unlock speechSynthesis on mobile (must be called from user gesture)
     _speechUnlocked: false,
     unlockSpeech() {
         if (this._speechUnlocked) return;
@@ -1389,20 +1424,39 @@ const Audio = {
         // Cancel any stale speech state
         this.synth.cancel();
 
-        // Speak a silent utterance to "warm up" the speech engine on Android/Fire OS
+        // V37: Improved warm-up sequence for Fire/Android/Silk
+        // Step 1: Silent utterance to prime the speech engine
         try {
-            const utterance = new SpeechSynthesisUtterance('');
-            utterance.volume = 0;
-            utterance.rate = 10;
-            this.synth.speak(utterance);
+            const warmup = new SpeechSynthesisUtterance(' ');
+            warmup.volume = 0.01; // near-silent but not zero (zero can be ignored on some engines)
+            warmup.rate = 5;
+            warmup.onend = () => {
+                // Step 2: After warm-up completes, do a second prime with actual text
+                // This ensures the engine is fully initialized on Fire OS
+                try {
+                    const prime = new SpeechSynthesisUtterance('.');
+                    prime.volume = 0.01;
+                    prime.rate = 10;
+                    this.synth.speak(prime);
+                } catch (e) { /* ignore */ }
+            };
+            this.synth.speak(warmup);
         } catch (e) { /* ignore */ }
 
         // Pre-load voices (Android often needs voiceschanged to fire first)
+        // V37: Also reset cached voice so it re-evaluates with new Android voice list
+        this._preferredVoice = null;
         if (this.synth.getVoices && this.synth.getVoices().length === 0) {
             this.synth.addEventListener('voiceschanged', () => {
                 this.synth.getVoices(); // cache them
                 this._pickVoice(); // V29: select preferred female voice
             }, { once: true });
+            // V37: Fallback if voiceschanged never fires (some Android/Silk builds)
+            setTimeout(() => {
+                if (!this._preferredVoice) {
+                    this._pickVoice();
+                }
+            }, 1000);
         } else {
             this._pickVoice(); // V29: select preferred female voice immediately
         }

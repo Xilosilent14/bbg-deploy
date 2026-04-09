@@ -3241,3 +3241,32 @@ body.high-contrast .hud-streak {
 /* Bigger speaker button */
 .btn-speaker { font-size: 1.7rem; top: 10px; right: 14px; min-width: 44px; min-height: 44px; }
 }
+
+/* === Fire tablet touch target minimums (48px for ages 3-6) === */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-small,
+.btn-back,
+.btn-large,
+.btn-pause,
+.btn-speaker,
+.btn-quick-race,
+.btn-same-race,
+.btn-share-progress,
+.btn-reset-data,
+.answer-btn,
+.grade-btn,
+.upgrade-btn,
+.mod-btn,
+.mod-buy,
+.topic-card,
+.car-type-card,
+.garage-item,
+.map-stop,
+.mode-btn,
+.settings-item,
+[role="button"] {
+    min-height: 48px;
+    min-width: 48px;
+}

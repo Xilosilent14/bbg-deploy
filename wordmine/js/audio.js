@@ -22,12 +22,28 @@ const Audio = (() => {
         const voices = window.speechSynthesis.getVoices();
         if (voices.length > 0) {
             voicesReady = true;
-            // Prefer child-friendly voices
-            cachedVoice = voices.find(v => v.name.includes('Samantha')) ||
-                voices.find(v => v.name.includes('Google US English')) ||
-                voices.find(v => v.name.includes('Microsoft Zira')) ||
-                voices.find(v => v.lang.startsWith('en') && v.localService) ||
-                voices.find(v => v.lang.startsWith('en')) ||
+            // Prefer child-friendly voices, ranked by naturalness
+            // Includes Android/Fire tablet voices for Silk browser
+            const en = voices.filter(v => /^en[-_]/i.test(v.lang));
+            const preferred = [
+                'samantha',                 // macOS/iOS
+                'google us english',        // Chrome desktop
+                'microsoft zira',           // Windows
+                'microsoft aria',           // Windows 11 neural
+                'microsoft jenny',          // Windows 11 neural
+                'en-us-x-sfg-local',        // Android/Fire female (high quality)
+                'en-us-x-tpd-local',        // Android/Fire female (alt)
+                'en-us-x-sfg-network',      // Android/Fire female (network)
+                'english united states',    // Android/Silk generic
+            ];
+            cachedVoice = null;
+            for (const pref of preferred) {
+                const match = en.find(v => v.name.toLowerCase().includes(pref));
+                if (match) { cachedVoice = match; return; }
+            }
+            // Fallback: local English voice (lower latency on Fire tablets)
+            cachedVoice = en.find(v => v.localService) ||
+                en.find(v => v.lang.startsWith('en')) ||
                 null;
         }
     }
@@ -552,12 +568,13 @@ const Audio = (() => {
         if (!voicesReady) loadVoices();
 
         const u = new SpeechSynthesisUtterance(text);
+        // Pitch reduced ~0.05 for more natural sound on Fire/Silk
         const profiles = {
-            question: { rate: 0.85, pitch: 1.1 },
-            excited: { rate: 1.0, pitch: 1.3 },
-            gentle: { rate: 0.75, pitch: 1.0 },
-            explain: { rate: 0.8, pitch: 0.95 },
-            word: { rate: 0.7, pitch: 1.05 }
+            question: { rate: 0.85, pitch: 1.05 },
+            excited: { rate: 1.0, pitch: 1.25 },
+            gentle: { rate: 0.75, pitch: 0.95 },
+            explain: { rate: 0.8, pitch: 0.9 },
+            word: { rate: 0.7, pitch: 1.0 }
         };
         const p = profiles[mode] || profiles.question;
         u.rate = p.rate;
@@ -570,6 +587,13 @@ const Audio = (() => {
         u.onerror = () => { stopTTSKeepAlive(); unduckMusic(); };
 
         window.speechSynthesis.speak(u);
+
+        // Retry if speech engine fails to start (common on Fire/Android)
+        setTimeout(() => {
+            if (window.speechSynthesis && !window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
+                try { window.speechSynthesis.speak(u); } catch (e) { /* ignore */ }
+            }
+        }, 250);
     }
 
     function speakWord(word) {

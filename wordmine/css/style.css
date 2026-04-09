@@ -1714,11 +1714,11 @@ body.high-contrast .answer-btn {
     }
 }
 
-/* Touch-friendly: ensure all interactive elements are at least 44px */
+/* Touch-friendly: ensure all interactive elements are at least 48px */
 @media (pointer: coarse) {
     .mc-btn, .answer-btn, .grade-btn, .topic-tab, .mode-card, .topic-card, .shop-card, .skin-card {
-        min-height: 44px;
-        min-width: 44px;
+        min-height: 48px;
+        min-width: 48px;
     }
     .answer-btn {
         font-size: 16px;
@@ -2364,4 +2364,22 @@ body.high-contrast .answer-btn {
 @keyframes wmTutorialBounce {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-5px); }
+}
+
+/* === Fire tablet touch target minimums (48px for ages 3-6) === */
+.mc-btn,
+.mc-btn-primary,
+.mc-btn-back,
+.mc-btn-small,
+.answer-btn,
+.grade-btn,
+.toggle-btn,
+.mode-card,
+.topic-card,
+.topic-tab,
+.skin-card,
+.shop-card,
+[role="button"] {
+    min-height: 48px;
+    min-width: 48px;
 }

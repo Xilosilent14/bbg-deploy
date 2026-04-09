@@ -927,3 +927,15 @@ html, body {
 .lane-label:nth-child(1) { border-color: #22d3ee; }
 .lane-label:nth-child(2) { border-color: #a855f7; }
 .lane-label:nth-child(3) { border-color: #ec4899; }
+
+/* === Fire tablet touch target minimums (48px for ages 3-6) === */
+.title-play-btn,
+.title-secondary-btn,
+.diff-btn,
+.song-card,
+.hud-pause,
+.results-buttons .btn,
+[role="button"] {
+    min-height: 48px;
+    min-width: 48px;
+}

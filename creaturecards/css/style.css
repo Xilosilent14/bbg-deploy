@@ -1033,3 +1033,17 @@ html, body {
     font-size: 0.65rem;
     color: var(--otb-text-muted, #999);
 }
+
+/* === Fire tablet touch target minimums (48px for ages 3-6) === */
+.title-play-btn,
+.title-secondary-btn,
+.answer-btn,
+.type-tab,
+.creature-slot,
+.pack-card,
+.zone-node,
+.results-buttons .btn,
+[role="button"] {
+    min-height: 48px;
+    min-width: 48px;
+}

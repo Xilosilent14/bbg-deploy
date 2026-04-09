@@ -1748,3 +1748,25 @@ html, body {
 .io-header span, .io-row span { display: inline-block; width: 80px; padding: 6px 12px; text-align: center; }
 .io-row { display: flex; border-top: 1px solid rgba(255,255,255,0.08); color: white; font-size: 18px; font-weight: 700; }
 .io-ask { color: rgba(255,255,255,0.8); font-size: 16px; margin-top: 10px; }
+
+/* === Fire tablet touch target minimums (48px for ages 3-6) === */
+.big-btn,
+.btn-play,
+.btn-stickers,
+.btn-hub,
+.btn-parents,
+.back-btn,
+.activity-card,
+.shape-choice-btn,
+.number-choice-btn,
+.letter-choice-btn,
+.color-choice-btn,
+.shade-choice-btn,
+.warmcool-btn,
+.time-btn,
+.blend-choice,
+.vt-choice,
+[role="button"] {
+    min-height: 48px;
+    min-width: 48px;
+}

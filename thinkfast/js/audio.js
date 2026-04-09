@@ -18,6 +18,54 @@ const Audio = {
         return this._ctx;
     },
 
+    // V38: MP3 sound effect cache (loaded on first user gesture)
+    _mp3Cache: {},
+    _mp3Loaded: false,
+    _loadMP3Assets() {
+        if (this._mp3Loaded) return;
+        this._mp3Loaded = true;
+        const ctx = this._getCtx();
+        const manifest = [
+            { key: 'click', src: 'assets/sounds/sfx/click.mp3' },
+            { key: 'correct', src: 'assets/sounds/sfx/correct.mp3' },
+            { key: 'wrong', src: 'assets/sounds/sfx/wrong.mp3' },
+            { key: 'nitro', src: 'assets/sounds/sfx/nitro.mp3' },
+            { key: 'star', src: 'assets/sounds/sfx/star.mp3' },
+            { key: 'victory', src: 'assets/sounds/sfx/victory.mp3' },
+            { key: 'levelup', src: 'assets/sounds/sfx/levelup.mp3' },
+            { key: 'achievement', src: 'assets/sounds/sfx/achievement.mp3' },
+            { key: 'countdown', src: 'assets/sounds/sfx/countdown.mp3' },
+            { key: 'countdown-go', src: 'assets/sounds/sfx/countdown-go.mp3' },
+            { key: 'streak', src: 'assets/sounds/sfx/streak.mp3' },
+            { key: 'purchase', src: 'assets/sounds/sfx/purchase.mp3' },
+            { key: 'coin', src: 'assets/sounds/sfx/coin.mp3' },
+            { key: 'lane-change', src: 'assets/sounds/sfx/lane-change.mp3' },
+            { key: 'transition', src: 'assets/sounds/sfx/transition.mp3' }
+        ];
+        manifest.forEach(({ key, src }) => {
+            fetch(src)
+                .then(r => { if (!r.ok) throw new Error(); return r.arrayBuffer(); })
+                .then(buf => ctx.decodeAudioData(buf))
+                .then(decoded => { this._mp3Cache[key] = decoded; })
+                .catch(() => { /* silent fail — synth fallback remains */ });
+        });
+    },
+    // Play an MP3 buffer through the existing gain graph. Returns true if played, false if not loaded.
+    _playMP3(key, volume = 0.5) {
+        const buf = this._mp3Cache[key];
+        if (!buf) return false;
+        if (!Settings.get('sound')) return true; // muted but "handled"
+        const ctx = this._getCtx();
+        const source = ctx.createBufferSource();
+        source.buffer = buf;
+        const gain = ctx.createGain();
+        gain.gain.value = volume;
+        source.connect(gain);
+        gain.connect(ctx.destination);
+        source.start(0);
+        return true;
+    },
+
     // V4: Music state
     _musicPlaying: null, // 'menu' | 'race' | 'boss' | 'results' | 'garage' | null
     _musicNodes: [],
@@ -785,6 +833,7 @@ const Audio = {
     // ---- V22: UPGRADED UI SOUND EFFECTS ----
     playClick() {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('click', 0.4)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -822,6 +871,7 @@ const Audio = {
 
     playStarEarn() {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('star', 0.5)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -834,6 +884,7 @@ const Audio = {
 
     playLaneChange() {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('lane-change', 0.3)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -858,6 +909,7 @@ const Audio = {
     // V33: Accept optional streakCount for pitch escalation
     playCorrect(streakCount) {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('correct', 0.5)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -888,6 +940,7 @@ const Audio = {
 
     playWrong() {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('wrong', 0.4)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -907,6 +960,7 @@ const Audio = {
 
     playNitro() {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('nitro', 0.5)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -948,6 +1002,7 @@ const Audio = {
     // V14: Streak chime — warm ascending arpeggio
     playStreakChime(streakCount) {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('streak', 0.5)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -1028,6 +1083,7 @@ const Audio = {
 
     playVictory() {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('victory', 0.6)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -1048,6 +1104,7 @@ const Audio = {
 
     playLevelUp() {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('levelup', 0.6)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -1097,6 +1154,7 @@ const Audio = {
 
     playCountdown() {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('countdown', 0.4)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -1177,6 +1235,7 @@ const Audio = {
     // Zelda item discovery fanfare — "da da da DAAAA!"
     playAchievement() {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('achievement', 0.6)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -1211,6 +1270,7 @@ const Audio = {
     // Zelda puzzle-solved "GO!" tone — ascending resolution
     playCountdownGo() {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('countdown-go', 0.5)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -1230,6 +1290,7 @@ const Audio = {
     // Screen transition swoosh — filtered noise + pitched sweep
     playTransition() {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('transition', 0.4)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -1290,6 +1351,7 @@ const Audio = {
     // V5.8: Purchase — warm coin ding
     playPurchase() {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('purchase', 0.5)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;
@@ -1416,8 +1478,9 @@ const Audio = {
         if (this._speechUnlocked) return;
         this._speechUnlocked = true;
 
-        // Resume AudioContext
+        // Resume AudioContext and start loading MP3 assets
         this.resume();
+        this._loadMP3Assets();
 
         if (!this.synth) return;
 
@@ -1554,6 +1617,7 @@ const Audio = {
     // V31: Coin collect sound — bright ascending chime
     playCoinCollect() {
         if (!Settings.get('sound')) return;
+        if (this._playMP3('coin', 0.5)) return;
         try {
             const ctx = this._getCtx();
             const t = ctx.currentTime;

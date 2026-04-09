@@ -1,4 +1,4 @@
-const CACHE_NAME = 'think-fast-v81';
+const CACHE_NAME = 'think-fast-v82';
 const ASSETS = [
     '/',
     '/index.html',
@@ -28,6 +28,21 @@ const ASSETS = [
     '/js/settings.js',
     '/js/tutorial.js',
     '/js/story.js',
+    '/assets/sounds/sfx/click.mp3',
+    '/assets/sounds/sfx/correct.mp3',
+    '/assets/sounds/sfx/wrong.mp3',
+    '/assets/sounds/sfx/nitro.mp3',
+    '/assets/sounds/sfx/star.mp3',
+    '/assets/sounds/sfx/victory.mp3',
+    '/assets/sounds/sfx/levelup.mp3',
+    '/assets/sounds/sfx/achievement.mp3',
+    '/assets/sounds/sfx/countdown.mp3',
+    '/assets/sounds/sfx/countdown-go.mp3',
+    '/assets/sounds/sfx/streak.mp3',
+    '/assets/sounds/sfx/purchase.mp3',
+    '/assets/sounds/sfx/coin.mp3',
+    '/assets/sounds/sfx/lane-change.mp3',
+    '/assets/sounds/sfx/transition.mp3',
     '/manifest.json',
     '/icons/icon-192.png',
     '/icons/icon-512.png',

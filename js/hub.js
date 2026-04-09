@@ -774,6 +774,14 @@
         document.querySelectorAll('[data-game]').forEach(card => {
             const url = card.href;
             if (!url || url === '#') return;
+            // Same-origin games (production sub-paths) are always available
+            try {
+                const gameOrigin = new URL(url).origin;
+                if (gameOrigin === window.location.origin) {
+                    card.classList.remove('hub-game-offline');
+                    return;
+                }
+            } catch(e) {}
             fetch(url, { mode: 'no-cors', cache: 'no-cache' })
                 .then(() => { card.classList.remove('hub-game-offline'); })
                 .catch(() => {

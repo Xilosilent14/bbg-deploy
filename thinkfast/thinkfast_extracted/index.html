@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="screen-orientation" content="landscape">
+    <title>Think Fast — The Great American Road Race</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self';">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- V17: Inline splash screen shown during script loading -->
+    <div id="splash-loading" style="
+        position: fixed; inset: 0; z-index: 9999;
+        background: #1a1a2e;
+        display: flex; align-items: center; justify-content: center;
+        flex-direction: column; gap: 12px;
+    ">
+        <div style="font-size: 3rem;">&#x1F3CE;&#xFE0F;</div>
+        <div style="color: #fff; font-size: 1.2rem; font-weight: 700; font-family: sans-serif;">Loading...</div>
+        <div style="width: 120px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; overflow: hidden;">
+            <div style="width: 40%; height: 100%; background: #e94560; border-radius: 2px; animation: splash-pulse 1.2s ease-in-out infinite;"></div>
+        </div>
+    </div>
+    <style>
+        @keyframes splash-pulse {
+            0%, 100% { width: 20%; margin-left: 0; }
+            50% { width: 60%; margin-left: 20%; }
+        }
+    </style>
+
+    <div id="game-container" role="main">
+        <!-- Title Screen -->
+        <div id="screen-title" class="screen active">
+            <div class="title-bg">
+                <div class="title-level-badge" id="title-level-badge"></div>
+                <h1 class="game-title">THINK<br><span class="title-accent">FAST</span></h1>
+                <div class="title-subtitle">The Great American Road Race</div>
+                <div class="title-streak" id="title-streak"></div>
+                <div class="title-daily" id="title-daily"></div>
+                <div class="title-corvette" id="title-car"></div>
+                <div class="title-buttons">
+                    <button class="btn btn-quick-race btn-large" id="btn-quick-race" aria-label="Quick Race">
+                        <span class="btn-icon" aria-hidden="true">🚀</span> Quick Race
+                    </button>
+                    <button class="btn btn-primary btn-large" id="btn-math-race" data-subject="math" aria-label="Start Math Race">
+                        <span class="btn-icon" aria-hidden="true">🔢</span> Math Race
+                    </button>
+                    <button class="btn btn-secondary btn-large" id="btn-reading-race" data-subject="reading" aria-label="Start Reading Race">
+                        <span class="btn-icon" aria-hidden="true">📖</span> Reading Race
+                    </button>
+                </div>
+                <div class="title-bottom-buttons">
+                    <button class="btn btn-small" id="btn-garage" aria-label="Open Garage">🏎️ Garage</button>
+                    <button class="btn btn-small" id="btn-map" aria-label="View Road Trip Map">🗺️ Road Trip</button>
+                    <button class="btn btn-small" id="btn-settings" aria-label="Open Settings">⚙️ Settings</button>
+                    <button class="btn btn-small" id="btn-parent" aria-label="Parent Dashboard">👤 Parents</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Road Trip Map Screen -->
+        <div id="screen-map" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-map-back">← Back</button>
+                <h2>The Great American Road Race</h2>
+            </div>
+            <div class="map-container" id="map-container"></div>
+        </div>
+
+        <!-- Topic Select Screen -->
+        <div id="screen-topics" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-topics-back">← Back</button>
+                <h2 id="topics-title">Choose Your Challenge</h2>
+            </div>
+            <div class="topics-grid" id="topics-grid"></div>
+        </div>
+
+        <!-- Racing Screen -->
+        <div id="screen-race" class="screen">
+            <canvas id="race-canvas" tabindex="0" aria-label="Racing game - use arrow keys or W/S to change lanes"></canvas>
+            <!-- V5.8: Pause button -->
+            <button class="btn-pause" id="btn-pause" aria-label="Pause race">⏸</button>
+            <div class="pause-overlay" id="pause-overlay" style="display:none;">
+                <div class="pause-box">
+                    <h2>PAUSED</h2>
+                    <button class="btn btn-primary btn-large" id="btn-resume">▶ Resume</button>
+                    <button class="btn btn-secondary" id="btn-quit-race">🏠 Quit Race</button>
+                </div>
+            </div>
+            <div class="race-hud">
+                <div class="hud-position" id="hud-position" role="status" aria-live="polite" aria-atomic="true">Position: 1st</div>
+                <div class="hud-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="hud-progress-fill"></div>
+                        <div class="progress-player-dot" id="hud-player-dot"></div>
+                        <div class="progress-opp-dot" id="hud-opp-dot-0"></div>
+                        <div class="progress-opp-dot" id="hud-opp-dot-1"></div>
+                        <div class="progress-opp-dot" id="hud-opp-dot-2"></div>
+                    </div>
+                    <span id="hud-question-count" role="status" aria-live="polite" aria-label="Questions answered">0/8</span>
+                </div>
+                <div class="hud-streak" id="hud-streak" aria-live="polite"></div>
+            </div>
+            <div class="hud-powerup" id="hud-powerup" style="display:none;"></div>
+            <div class="question-overlay" id="question-overlay" style="display:none;" role="dialog" aria-label="Question">
+                <div class="question-box">
+                    <div class="question-text" id="question-text" aria-live="polite"></div>
+                    <button class="btn-speaker" id="btn-replay-question" title="Hear again" aria-label="Hear question again">🔊</button>
+                    <div class="answers-grid" id="answers-grid"></div>
+                    <div class="explanation-bubble" id="explanation-bubble" style="display:none;" aria-live="polite" role="alert"></div>
+                </div>
+            </div>
+            <div class="race-feedback" id="race-feedback" style="display:none;" role="status" aria-live="assertive"></div>
+            <!-- V4: Tutorial overlay -->
+            <div class="tutorial-overlay" id="tutorial-overlay" style="display:none;"></div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="screen-results" class="screen">
+            <div class="results-content">
+                <h2 class="results-title" id="results-title">Race Complete!</h2>
+                <div class="results-stars" id="results-stars"></div>
+                <div class="results-stats" id="results-stats"></div>
+                <div class="results-level-up" id="results-level-up" style="display:none;"></div>
+                <div class="results-achievements" id="results-achievements" style="display:none;"></div>
+                <div id="results-break-suggestion" style="display:none;"></div>
+                <div class="results-buttons">
+                    <button class="btn btn-primary btn-large" id="btn-race-again" aria-label="Race again with new topic">🏁 Race Again</button>
+                    <button class="btn-same-race" id="btn-same-race" aria-label="Race again with same topic">🔄 Same Race Again</button>
+                    <button class="btn btn-secondary btn-large" id="btn-results-menu" aria-label="Return to menu">🏠 Menu</button>
+                </div>
+            </div>
+            <canvas id="celebration-canvas" aria-hidden="true"></canvas>
+        </div>
+
+        <!-- Garage Screen (V4: added cars tab) -->
+        <div id="screen-garage" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-garage-back">← Back</button>
+                <h2>🏎️ My Garage</h2>
+                <div class="star-count" id="garage-stars">⭐ 0</div>
+            </div>
+            <div class="garage-tabs">
+                <button class="garage-tab active" id="tab-colors" data-tab="colors">🎨 Colors</button>
+                <button class="garage-tab" id="tab-cars" data-tab="cars">🚗 Cars</button>
+                <button class="garage-tab" id="tab-upgrades" data-tab="upgrades">⚡ Upgrades</button>
+                <button class="garage-tab" id="tab-mods" data-tab="mods">🎮 Mods</button>
+                <button class="garage-tab" id="tab-achievements" data-tab="achievements">🏆 Trophies</button>
+            </div>
+            <div class="garage-content">
+                <div class="garage-preview" id="garage-preview"></div>
+                <div class="garage-panel" id="garage-panel">
+                    <div class="garage-options" id="garage-options"></div>
+                    <div class="garage-cars" id="garage-cars" style="display:none;"></div>
+                    <div class="garage-upgrades" id="garage-upgrades" style="display:none;"></div>
+                    <div class="garage-mods" id="garage-mods" style="display:none;"></div>
+                    <div class="garage-achievements" id="garage-achievements" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- V4: Settings Screen -->
+        <div id="screen-settings" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-settings-back">← Back</button>
+                <h2>⚙️ Settings</h2>
+            </div>
+            <div class="settings-content">
+                <div class="settings-group">
+                    <div class="settings-item" id="toggle-sound" role="switch" aria-checked="true" tabindex="0" aria-label="Sound Effects">
+                        <div class="settings-item-info">
+                            <div class="settings-item-icon">🔊</div>
+                            <div>
+                                <div class="settings-item-label">Sound Effects</div>
+                                <div class="settings-item-desc">Button clicks, correct/wrong sounds, power-ups</div>
+                            </div>
+                        </div>
+                        <div class="settings-toggle">
+                            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                            <span class="toggle-status">ON</span>
+                        </div>
+                    </div>
+                    <div class="settings-item" id="toggle-music" role="switch" aria-checked="true" tabindex="0" aria-label="Background Music">
+                        <div class="settings-item-info">
+                            <div class="settings-item-icon">🎵</div>
+                            <div>
+                                <div class="settings-item-label">Background Music</div>
+                                <div class="settings-item-desc">Menu and racing music</div>
+                            </div>
+                        </div>
+                        <div class="settings-toggle">
+                            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                            <span class="toggle-status">ON</span>
+                        </div>
+                    </div>
+                    <div class="settings-item" id="toggle-voice" role="switch" aria-checked="true" tabindex="0" aria-label="Voice Read Aloud">
+                        <div class="settings-item-info">
+                            <div class="settings-item-icon">🗣️</div>
+                            <div>
+                                <div class="settings-item-label">Voice / Read Aloud</div>
+                                <div class="settings-item-desc">Questions and encouragement read aloud</div>
+                            </div>
+                        </div>
+                        <div class="settings-toggle">
+                            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                            <span class="toggle-status">ON</span>
+                        </div>
+                    </div>
+                    <div class="settings-item" id="toggle-contrast" role="switch" aria-checked="false" tabindex="0" aria-label="High Contrast Mode">
+                        <div class="settings-item-info">
+                            <div class="settings-item-icon">🔲</div>
+                            <div>
+                                <div class="settings-item-label">High Contrast</div>
+                                <div class="settings-item-desc">Thicker borders and bolder text</div>
+                            </div>
+                        </div>
+                        <div class="settings-toggle">
+                            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                            <span class="toggle-status">OFF</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-hint">Use arrow keys or W/S during races to change lanes!</div>
+                <div class="settings-group" id="settings-grade" style="margin-top:12px;">
+                    <div class="settings-item-label" style="padding:8px 12px;color:#ffd700;font-size:0.9rem;">🎓 Grade Level</div>
+                    <div style="padding:4px 12px 12px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn grade-btn" data-grade="prek" id="grade-prek">Pre-K</button>
+                        <button class="btn grade-btn" data-grade="k" id="grade-k">Kindergarten</button>
+                        <button class="btn grade-btn" data-grade="1st" id="grade-1st">1st Grade</button>
+                        <button class="btn grade-btn" data-grade="2nd" id="grade-2nd">2nd Grade</button>
+                    </div>
+                </div>
+                <div class="settings-group" id="settings-difficulty" style="margin-top:12px;">
+                    <div class="settings-item-label" style="padding:8px 12px;color:#ffd700;font-size:0.9rem;">📊 Current Difficulty Levels</div>
+                    <div id="difficulty-display" style="padding:4px 12px 12px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parent Dashboard Screen -->
+        <div id="screen-parent" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="btn-parent-back">← Back</button>
+                <h2>📊 Parent Dashboard</h2>
+            </div>
+            <div class="parent-content" id="parent-content"></div>
+        </div>
+
+        <!-- First-Time Welcome Overlay -->
+        <div id="welcome-overlay" class="welcome-overlay" style="display:none">
+            <div class="welcome-card">
+                <div class="welcome-car-emoji">🏎️</div>
+                <h1 class="welcome-title">Welcome, Racer!</h1>
+                <p class="welcome-text">What's your name?</p>
+                <input type="text" id="welcome-name" class="welcome-input" placeholder="Type your name..." maxlength="20" autocomplete="off">
+                <div class="welcome-grade-pick">
+                    <p class="welcome-text">How old are you?</p>
+                    <div class="welcome-grade-buttons">
+                        <button class="btn btn-welcome-grade" data-grade="prek">3-4<br><small>Pre-K</small></button>
+                        <button class="btn btn-welcome-grade" data-grade="k">5-6<br><small>Kinder</small></button>
+                        <button class="btn btn-welcome-grade" data-grade="1st">6-7<br><small>1st Grade</small></button>
+                        <button class="btn btn-welcome-grade" data-grade="2nd">7-8<br><small>2nd Grade</small></button>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-large" id="btn-welcome-go" style="display:none">
+                    <span class="btn-icon">🚀</span> Let's Race!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/settings.js"></script>
+    <script src="js/progress.js"></script>
+    <script src="js/adaptive.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/math-data.js"></script>
+    <script src="js/reading-data.js"></script>
+    <script src="js/questions.js"></script>
+    <script src="js/tutorial.js"></script>
+    <script src="js/car-data.js"></script>
+    <script src="js/cars.js"></script>
+    <script src="js/game-renderer.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/celebration.js"></script>
+    <script src="js/achievements.js"></script>
+    <script src="js/garage.js"></script>
+    <script src="js/parent-dashboard.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

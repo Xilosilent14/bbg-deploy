@@ -2,7 +2,7 @@
   "name": "Word Mine — Minecraft Learning",
   "short_name": "Word Mine",
   "description": "A Minecraft-themed educational game for FastBridge reading prep",
-  "start_url": "/index.html",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "landscape",
   "background_color": "#1a1a2e",

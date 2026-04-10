@@ -1,6 +1,9 @@
 /*
   X-Frame-Options: SAMEORIGIN
 
+/version.json
+  Cache-Control: no-cache, no-store, must-revalidate
+
 /css/shared/*
   Cache-Control: public, max-age=86400
 

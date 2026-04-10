@@ -1,5 +1,5 @@
 // Creature Cards — Service Worker
-const CACHE_NAME = 'creature-cards-v16';
+const CACHE_NAME = 'creature-cards-v17';
 const ASSETS = [
     './', './index.html', './css/style.css',
     './css/shared/design-system.css',
@@ -48,6 +48,7 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
     if (e.request.method !== 'GET') return;
+// Always fetch version.json from network (auto-update check)    if (e.request.url.includes('version.json') || e.request.url.includes('auto-update.js')) return;
     e.respondWith(
         caches.match(e.request).then(cached => {
             const fetchP = fetch(e.request).then(r => {

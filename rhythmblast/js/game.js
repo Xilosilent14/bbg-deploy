@@ -102,11 +102,12 @@ const Game = (() => {
         const feedbackEl = document.getElementById('qp-feedback');
         if (!overlay) return;
 
-        textEl.textContent = questionData.questionSpeak || questionData.question;
+        // Show the VISUAL question (with emojis, objects, line breaks)
+        textEl.innerHTML = (questionData.question || '').replace(/\n/g, '<br>');
         feedbackEl.textContent = '';
         feedbackEl.style.color = '';
 
-        // Auto-speak the question
+        // SPEAK the TTS-friendly version (without visual clutter)
         if (typeof Audio !== 'undefined' && Audio.speak) {
             setTimeout(() => Audio.speak(questionData.questionSpeak || questionData.question), 200);
         }

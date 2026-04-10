@@ -120,6 +120,10 @@ const Main = (() => {
     }
 
     function checkDailyStreak() {
+        // Also check ecosystem streak for Hub
+        if (typeof OTBEcosystem !== 'undefined') {
+            try { OTBEcosystem.checkDailyStreak(); } catch (_) {}
+        }
         const { streak, isNew } = Progress.checkDailyStreak();
         if (isNew && streak >= 1) {
             const bonusGems = Math.min(streak * 2, 20);

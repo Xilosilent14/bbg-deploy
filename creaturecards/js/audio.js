@@ -482,18 +482,28 @@ const AudioSystem = (() => {
         musicInterval = setInterval(playStep, eighthSec * 1000);
     }
 
+    // MP3 background music for menu/title
+    let _bgmAudio = null;
     function startTitleMusic() {
+        if (!musicEnabled) return;
+        stopMusic();
+        _bgmAudio = new Audio('assets/sounds/music/bgm-menu.mp3');
+        _bgmAudio.loop = true;
+        _bgmAudio.volume = 0.18;
+        _bgmAudio.play().catch(() => {});
+    }
+
+    // Keep original synth title as unused reference
+    function _startTitleMusicSynth() {
         if (!musicEnabled || !_ensureCtx()) return;
         stopMusic();
-
-        // Calm ambient: slow arpeggiated C major 7 chords, sine wave
         const BPM = 72;
         const beatSec = 60 / BPM;
         const notes = [
-            261.63, 329.63, 392.00, 493.88,  // C4, E4, G4, B4
-            293.66, 349.23, 440.00, 523.25,   // D4, F4, A4, C5
-            261.63, 311.13, 392.00, 523.25,   // C4, Eb4, G4, C5
-            246.94, 311.13, 370.00, 466.16    // B3, Eb4, F#4, Bb4
+            261.63, 329.63, 392.00, 493.88,
+            293.66, 349.23, 440.00, 523.25,
+            261.63, 311.13, 392.00, 523.25,
+            246.94, 311.13, 370.00, 466.16
         ];
         let step = 0;
         const total = notes.length;
@@ -538,11 +548,13 @@ const AudioSystem = (() => {
     }
 
     function stopMusic() {
+        // Stop MP3 music
+        if (_bgmAudio) { _bgmAudio.pause(); _bgmAudio.currentTime = 0; _bgmAudio = null; }
+        // Stop synth music
         if (musicInterval) {
             clearInterval(musicInterval);
             musicInterval = null;
         }
-        // Fade out music gain
         if (musicGain && ctx) {
             try {
                 musicGain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.5);

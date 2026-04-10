@@ -34,6 +34,11 @@ const Main = {
             }
         } catch (_) {}
 
+        // V41: Check daily streak for ecosystem
+        if (typeof OTBEcosystem !== 'undefined') {
+            try { OTBEcosystem.checkDailyStreak(); } catch (_) {}
+        }
+
         // First-time welcome flow
         if (!Progress.data.playerName && Progress.data.totalRaces === 0) {
             this._showWelcome();

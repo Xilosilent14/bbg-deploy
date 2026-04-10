@@ -86,6 +86,94 @@ const Game = (() => {
     // Beat pulse
     let beatPulse = 0;
 
+    // Question Phase state (separates cognitive from motor tasks)
+    let qPhase = null; // { question, answers, correctIndex, topic, domain, answered: false }
+    let qPhaseTimer = 0; // auto-advance timer
+    const Q_PHASE_TIMEOUT = 12000; // 12s before auto-advancing
+
+    function _startQuestionPhase(questionData) {
+        qPhase = { ...questionData, answered: false, startTime: Date.now() };
+        running = false; // pause note falling
+        Audio.stopSong();
+
+        const overlay = document.getElementById('question-phase');
+        const textEl = document.getElementById('qp-text');
+        const answersEl = document.getElementById('qp-answers');
+        const feedbackEl = document.getElementById('qp-feedback');
+        if (!overlay) return;
+
+        textEl.textContent = questionData.questionSpeak || questionData.question;
+        feedbackEl.textContent = '';
+        feedbackEl.style.color = '';
+
+        // Auto-speak the question
+        if (typeof Audio !== 'undefined' && Audio.speak) {
+            setTimeout(() => Audio.speak(questionData.questionSpeak || questionData.question), 200);
+        }
+
+        answersEl.innerHTML = questionData.answers.map((a, i) =>
+            `<button class="qp-answer-btn" data-idx="${i}">${a}</button>`
+        ).join('');
+
+        answersEl.querySelectorAll('.qp-answer-btn').forEach(btn => {
+            btn.addEventListener('click', () => _onQuestionAnswer(parseInt(btn.dataset.idx)));
+        });
+
+        overlay.style.display = 'flex';
+
+        // Auto-advance timer
+        qPhaseTimer = setTimeout(() => {
+            if (qPhase && !qPhase.answered) _onQuestionAnswer(-1); // timeout = skip
+        }, Q_PHASE_TIMEOUT);
+    }
+
+    function _onQuestionAnswer(idx) {
+        if (!qPhase || qPhase.answered) return;
+        qPhase.answered = true;
+        clearTimeout(qPhaseTimer);
+
+        const correct = idx === qPhase.correctIndex;
+        const feedbackEl = document.getElementById('qp-feedback');
+        const btns = document.querySelectorAll('#qp-answers .qp-answer-btn');
+
+        // Highlight correct/wrong
+        btns.forEach((btn, i) => {
+            if (i === qPhase.correctIndex) btn.classList.add('correct');
+            else if (i === idx) btn.classList.add('wrong');
+            btn.style.pointerEvents = 'none';
+        });
+
+        if (correct) {
+            feedbackEl.textContent = 'Correct!';
+            feedbackEl.style.color = '#2ecc71';
+            Audio.perfectHit();
+            combo++;
+            if (combo > maxCombo) maxCombo = combo;
+            score += 100;
+        } else {
+            feedbackEl.textContent = idx === -1 ? 'Time up!' : 'Not quite!';
+            feedbackEl.style.color = '#f59e0b';
+            Audio.miss();
+            // Don't reset combo on easy
+            const diff = (Progress.getSettings && Progress.getSettings().difficulty) || 'normal';
+            if (diff === 'easy') combo = Math.max(0, combo - 1);
+            else combo = 0;
+        }
+
+        // Track for ecosystem
+        noteResults.push({ topic: qPhase.domain || 'math', correct });
+
+        // Resume after feedback delay
+        setTimeout(() => {
+            document.getElementById('question-phase').style.display = 'none';
+            qPhase = null;
+            // Resume rhythm
+            running = true;
+            Audio.startSong(currentSong, _onBeat);
+            _loop();
+        }, correct ? 1200 : 1800);
+    }
+
     // Callbacks
     let onSongEnd = null;
 
@@ -159,8 +247,9 @@ const Game = (() => {
             const ttsText = generated.ttsText;
             const questionText = generated.question || '';
 
-            // Store question text on each note group for the visual prompt
-            notes.forEach(n => { n._questionText = questionText; });
+            // Store question data on each note for the question phase overlay
+            const qData = generated.questionData || null;
+            notes.forEach(n => { n._questionText = questionText; n._questionData = qData; });
 
             notes.forEach(n => {
                 noteQueue.push({
@@ -172,8 +261,9 @@ const Game = (() => {
                     spawnBeat: Math.max(0, n.hitBeat - Math.round(fallDurationMs / songBeatDuration)), // spawn fallDuration before hit
                     alpha: 1
                 });
-                // Only count notes the player is expected to tap
-                if (n.type !== 'sequence-lead' && n.isCorrect !== false) totalNotes++;
+                // Count identify notes as question phase answers (1 per group, not per lane)
+                if (n.type === 'identify' && n.isCorrect) totalNotes++;
+                else if (n.type !== 'sequence-lead' && n.type !== 'identify' && n.isCorrect !== false) totalNotes++;
             });
             // Schedule TTS for reading notes
             if (ttsText && notes[0]) {
@@ -208,15 +298,25 @@ const Game = (() => {
             if (!n.spawned && beatIdx >= n.spawnBeat) {
                 n.spawned = true;
                 if (n._tts) {
-                    Audio.speak(n.text);
-                } else {
+                    // Skip TTS scheduling (question phase handles it now)
+                    return;
+                }
+                // Identify notes: show Question Phase overlay instead of falling notes
+                if (n.type === 'identify' && n._questionData) {
+                    // Mark all notes in this beat group as spawned/handled
+                    noteQueue.forEach(other => {
+                        if (other.hitBeat === n.hitBeat && other.type === 'identify') {
+                            other.spawned = true;
+                            other.hit = true; // prevent miss counting
+                        }
+                    });
+                    _startQuestionPhase(n._questionData);
+                    return;
+                }
+                // Regular rhythm notes: fall as usual
+                if (n.type !== 'identify') {
                     n.y = SPAWN_Y;
                     activeNotes.push(n);
-                    // Show question prompt and lane labels when identify notes spawn
-                    if (n.type === 'identify' && n._questionText) {
-                        _showQuestionPrompt(n._questionText);
-                        _showLaneLabels(activeNotes.filter(an => an.hitBeat === n.hitBeat && an.type === 'identify'));
-                    }
                 }
             }
         });
@@ -259,6 +359,11 @@ const Game = (() => {
         if (prompt) prompt.style.display = 'none';
         const labels = document.getElementById('lane-labels');
         if (labels) labels.style.display = 'none';
+        // Clean up question phase
+        const qpOverlay = document.getElementById('question-phase');
+        if (qpOverlay) qpOverlay.style.display = 'none';
+        clearTimeout(qPhaseTimer);
+        qPhase = null;
     }
 
     function pause() {

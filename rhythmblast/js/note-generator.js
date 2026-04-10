@@ -78,7 +78,17 @@ const NoteGenerator = (() => {
             ttsText = question.question;
         }
 
-        return { notes, ttsText, question: question.question };
+        // Package question data for Question Phase overlay
+        const questionData = {
+            question: question.question,
+            questionSpeak: question.questionSpeak || question.question,
+            answers: notes.map(n => n.text),
+            correctIndex: notes.findIndex(n => n.isCorrect),
+            topic: question.topic || 'general',
+            domain: domain
+        };
+
+        return { notes, ttsText, question: question.question, questionData };
     }
 
     /**

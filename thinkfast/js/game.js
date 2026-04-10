@@ -2300,6 +2300,12 @@ const Game = {
             stars, streak: this.bestStreak
         });
 
+        // V41: Report to shared BBG ecosystem (Hub XP/coins)
+        if (typeof OTBEcosystem !== 'undefined') {
+            OTBEcosystem.addXP(xpEarned, 'think-fast');
+            OTBEcosystem.addCoins(stars + bonusStars, 'think-fast');
+        }
+
         // V5: Track generation wins and unlock bonus colors
         const currentGen = Progress.data.carType || 'c1';
         const genWins = Progress.recordGenerationWin(currentGen);

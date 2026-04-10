@@ -202,15 +202,34 @@ const Audio = (() => {
 
     function toggle(on) { enabled = on; }
 
+    // Background music (MP3 loop)
+    let _bgm = null;
+    let _musicOn = true;
+    function startMusic() {
+        if (!_musicOn || _bgm) return;
+        _bgm = new Audio('assets/sounds/music/bgm-play.mp3');
+        _bgm.loop = true;
+        _bgm.volume = 0.15;
+        _bgm.play().catch(() => {});
+    }
+    function stopMusic() {
+        if (_bgm) { _bgm.pause(); _bgm.currentTime = 0; _bgm = null; }
+    }
+    function toggleMusic(on) {
+        _musicOn = on;
+        if (on) startMusic(); else stopMusic();
+    }
+
     // Unlock audio context on first user interaction
     function unlock() {
         _ensureCtx();
         _loadMP3Assets();
+        startMusic();
     }
 
     return {
         playCorrect, playWrong, playPop, playTap,
         playSticker, playCelebration, playWhoosh,
-        toggle, unlock
+        toggle, unlock, startMusic, stopMusic, toggleMusic
     };
 })();

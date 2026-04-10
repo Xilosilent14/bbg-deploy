@@ -158,6 +158,10 @@ const Progress = (() => {
             d.level++;
         }
         save();
+        // Mirror XP to BBG ecosystem
+        if (typeof OTBEcosystem !== 'undefined') {
+            try { OTBEcosystem.addXP(amount, 'word-mine'); } catch (_) {}
+        }
         // Check for skin unlocks at new levels
         if (d.level > oldLevel) {
             SKIN_UNLOCKS.forEach(skin => {
@@ -490,6 +494,10 @@ const Progress = (() => {
         d.gems += amount;
         d.totalGemsEarned += amount;
         save();
+        // Mirror gems as coins to BBG ecosystem
+        if (typeof OTBEcosystem !== 'undefined') {
+            try { OTBEcosystem.addCoins(amount, 'word-mine'); } catch (_) {}
+        }
     }
 
     function spendGems(amount) {

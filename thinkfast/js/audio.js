@@ -265,7 +265,15 @@ const Audio = {
         // V36 fix: Guard against empty text (can hang some browsers)
         if (!text || !text.trim()) return Promise.resolve();
 
-        // V40: Try pre-generated TTS (Google Cloud Neural2) before browser TTS
+        // V42: Use Google Cloud TTS (works on Silk tablets)
+        if (typeof CloudTTS !== 'undefined') {
+            this._duckMusic(true);
+            return CloudTTS.speakFemale(text, {
+                onEnd: () => this._duckMusic(false)
+            });
+        }
+
+        // Legacy: Try pre-generated TTS then speechSynthesis
         const trimmed = text.trim();
 
         // Single word: sight word or nonsense word

@@ -649,7 +649,14 @@ const Audio = (() => {
     function speak(text, mode = 'question') {
         if (!voiceOn) return;
 
-        // V2: Try pre-generated TTS for single words
+        // V3: Use Google Cloud TTS (works on Silk tablets)
+        if (typeof CloudTTS !== 'undefined') {
+            duckMusic();
+            CloudTTS.speakFemale(text, { onEnd: () => unduckMusic() });
+            return;
+        }
+
+        // Legacy: Try pre-generated TTS for single words
         const trimmed = (text || '').trim();
         const singleWord = trimmed.split(/\s+/).length === 1 && /^[a-zA-Z]+$/.test(trimmed);
         if (singleWord) {

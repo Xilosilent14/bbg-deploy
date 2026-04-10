@@ -72,8 +72,15 @@ const Voice = (() => {
     }
 
     function speak(text, options = {}) {
-        if (!enabled || !synth) return Promise.resolve();
-        // Cancel any current speech
+        if (!enabled) return Promise.resolve();
+
+        // Use Google Cloud TTS (works on Silk tablets)
+        if (typeof CloudTTS !== 'undefined') {
+            return CloudTTS.speakSpidey(text, { onEnd: options.onEnd });
+        }
+
+        // Legacy speechSynthesis fallback
+        if (!synth) return Promise.resolve();
         synth.cancel();
 
         return new Promise(resolve => {

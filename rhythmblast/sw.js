@@ -1,5 +1,5 @@
 // Rhythm Blast — Service Worker
-const CACHE_NAME = 'rhythm-blast-v20';
+const CACHE_NAME = 'rhythm-blast-v21';
 const ASSETS = [
     './',
     './index.html',

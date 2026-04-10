@@ -70,6 +70,14 @@
         const trimmed = (text || '').trim();
         if (!trimmed) return;
 
+        // Use Google Cloud TTS (works on Silk tablets)
+        if (typeof CloudTTS !== 'undefined') {
+            CloudTTS.speakFemale(trimmed);
+            return;
+        }
+        // Legacy fallback below
+        if (!trimmed) return;
+
         // Try pre-generated MP3 first
         const qKey = trimmed.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim().replace(/\s+/g, '-').substring(0, 60);
         if (qKey.length > 3) {

@@ -33,9 +33,57 @@
         if (window.speechSynthesis.onvoiceschanged !== undefined)
             window.speechSynthesis.onvoiceschanged = _initTTS;
     }
+    // Pre-generated TTS cache (on-demand loading)
+    const _ttsMP3Cache = {};
+    const _ttsPending = new Set();
+    function _tryPregenTTS(key, subdir, volume) {
+        const cacheKey = subdir + '/' + key;
+        const buf = _ttsMP3Cache[cacheKey];
+        if (buf) {
+            const settings = typeof Progress !== 'undefined' ? Progress.getSettings() : {};
+            if (settings.voice === false) return true;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const source = ctx.createBufferSource();
+                source.buffer = buf;
+                const gain = ctx.createGain();
+                gain.gain.value = volume || 0.8;
+                source.connect(gain);
+                gain.connect(ctx.destination);
+                source.start(0);
+            } catch (_) {}
+            return true;
+        }
+        if (!_ttsPending.has(cacheKey)) {
+            _ttsPending.add(cacheKey);
+            fetch(`assets/sounds/tts/${subdir}/${key}.mp3`)
+                .then(r => { if (!r.ok) throw new Error(); return r.arrayBuffer(); })
+                .then(b => (new (window.AudioContext || window.webkitAudioContext)()).decodeAudioData(b))
+                .then(decoded => { _ttsMP3Cache[cacheKey] = decoded; })
+                .catch(() => {});
+        }
+        return false;
+    }
     function _speak(text) {
         const settings = typeof Progress !== 'undefined' ? Progress.getSettings() : {};
-        if (settings.voice === false || !window.speechSynthesis) return;
+        if (settings.voice === false) return;
+        const trimmed = (text || '').trim();
+        if (!trimmed) return;
+
+        // Try pre-generated MP3 first
+        const qKey = trimmed.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim().replace(/\s+/g, '-').substring(0, 60);
+        if (qKey.length > 3) {
+            if (_tryPregenTTS(qKey, 'questions/reading', 0.8) ||
+                _tryPregenTTS(qKey, 'questions/math', 0.8) ||
+                _tryPregenTTS(qKey, 'feedback', 0.8)) return;
+        }
+        // Single word: try words list
+        if (trimmed.split(/\s+/).length === 1 && /^[a-zA-Z]+$/.test(trimmed)) {
+            if (_tryPregenTTS(trimmed.toLowerCase(), 'words', 0.8)) return;
+        }
+
+        // Fallback to browser speechSynthesis
+        if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
         u.rate = 0.9;

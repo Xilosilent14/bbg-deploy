@@ -1,4 +1,4 @@
-const CACHE_NAME = 'think-fast-v86';
+const CACHE_NAME = 'think-fast-v87';
 const ASSETS = [
     '/',
     '/index.html',

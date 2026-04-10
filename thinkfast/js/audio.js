@@ -265,13 +265,24 @@ const Audio = {
         // V36 fix: Guard against empty text (can hang some browsers)
         if (!text || !text.trim()) return Promise.resolve();
 
-        // V39: Try pre-generated TTS for single words (sight words, nonsense words)
+        // V40: Try pre-generated TTS (Google Cloud Neural2) before browser TTS
         const trimmed = text.trim();
+
+        // Single word: sight word or nonsense word
         const singleWord = trimmed.split(/\s+/).length === 1 && /^[a-zA-Z]+$/.test(trimmed);
         if (singleWord) {
             const key = trimmed.toLowerCase();
-            // Try sight word first, then nonsense word
             if (this._playTTS(key, 'words', 0.8) || this._playTTS(key, 'nonsense', 0.8)) {
+                return Promise.resolve();
+            }
+        }
+
+        // Full question sentence: convert to filename and check questions/reading, questions/math
+        const qKey = trimmed.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim().replace(/\s+/g, '-').substring(0, 60);
+        if (qKey.length > 5) {
+            if (this._playTTS(qKey, 'questions/reading', 0.8) ||
+                this._playTTS(qKey, 'questions/math', 0.8) ||
+                this._playTTS(qKey, 'feedback', 0.8)) {
                 return Promise.resolve();
             }
         }

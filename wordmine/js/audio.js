@@ -657,6 +657,14 @@ const Audio = (() => {
             if (_tryTTS(key, 'words', 0.8) || _tryTTS(key, 'nonsense', 0.8)) return;
         }
 
+        // Full question: try pre-generated MP3
+        const qKey = trimmed.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim().replace(/\s+/g, '-').substring(0, 60);
+        if (qKey.length > 5) {
+            if (_tryTTS(qKey, 'questions/reading', 0.8) ||
+                _tryTTS(qKey, 'questions/math', 0.8) ||
+                _tryTTS(qKey, 'feedback', 0.8)) return;
+        }
+
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
         stopTTSKeepAlive();

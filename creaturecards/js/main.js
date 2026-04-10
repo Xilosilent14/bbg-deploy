@@ -12,6 +12,45 @@
     let _battleQuestionsTotal = 0;
     let _battleQuestionsCorrect = 0;
 
+    // === TTS for question reading (kids can't read yet) ===
+    let _ttsVoice = null;
+    function _initTTS() {
+        if (!window.speechSynthesis) return;
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length) {
+            const en = voices.filter(v => /^en[-_]/i.test(v.lang));
+            const preferred = ['samantha', 'google us english', 'microsoft zira', 'microsoft aria',
+                'en-us-x-sfg-local', 'en-us-x-tpd-local', 'english united states'];
+            for (const p of preferred) {
+                const m = en.find(v => v.name.toLowerCase().includes(p));
+                if (m) { _ttsVoice = m; return; }
+            }
+            _ttsVoice = en.find(v => v.localService) || en[0] || null;
+        }
+    }
+    if (window.speechSynthesis) {
+        _initTTS();
+        if (window.speechSynthesis.onvoiceschanged !== undefined)
+            window.speechSynthesis.onvoiceschanged = _initTTS;
+    }
+    function _speak(text) {
+        const settings = typeof Progress !== 'undefined' ? Progress.getSettings() : {};
+        if (settings.voice === false || !window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = 0.9;
+        u.pitch = 1.05;
+        u.volume = 0.9;
+        if (_ttsVoice) u.voice = _ttsVoice;
+        window.speechSynthesis.speak(u);
+        // Retry for Silk/Android
+        setTimeout(() => {
+            if (window.speechSynthesis && !window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
+                try { window.speechSynthesis.speak(u); } catch (_) {}
+            }
+        }, 250);
+    }
+
     // === BATTLE ANIMATION HELPERS ===
     const TYPE_COLORS = {
         ember: '#e8592a', tidal: '#2196F3', terra: '#4CAF50',
@@ -103,8 +142,8 @@
         // Initialize audio system
         AudioSystem.init();
         // Unlock audio on first user interaction (required for mobile)
-        document.addEventListener('click', () => AudioSystem.unlock(), { once: true });
-        document.addEventListener('touchstart', () => AudioSystem.unlock(), { once: true });
+        document.addEventListener('click', () => { AudioSystem.unlock(); if (window.speechSynthesis) { const u = new SpeechSynthesisUtterance(''); u.volume = 0; window.speechSynthesis.speak(u); } }, { once: true });
+        document.addEventListener('touchstart', () => { AudioSystem.unlock(); if (window.speechSynthesis) { const u = new SpeechSynthesisUtterance(''); u.volume = 0; window.speechSynthesis.speak(u); } }, { once: true });
 
         // First time: give starter pack
         if (!Collection.hasStarterPack()) {
@@ -474,6 +513,9 @@
         document.getElementById('question-area').style.display = 'block';
         document.getElementById('battle-actions').style.display = 'none';
         questionStartTime = Date.now();
+
+        // Auto-read question aloud for young kids
+        setTimeout(() => _speak(q.questionSpeak || q.question), 200);
     }
 
     function _onAnswer(idx, question) {

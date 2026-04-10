@@ -1,4 +1,4 @@
-const CACHE_NAME = 'think-fast-v85';
+const CACHE_NAME = 'think-fast-v86';
 const ASSETS = [
     '/',
     '/index.html',
@@ -120,6 +120,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     // Only handle same-origin GET requests
     if (event.request.method !== 'GET') return;
+if (event.request.url.includes('version.json') || event.request.url.includes('auto-update.js')) return;
 
     event.respondWith(
         caches.match(event.request).then((cached) => {

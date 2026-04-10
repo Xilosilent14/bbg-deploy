@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spidey-academy-v13';
+const CACHE_NAME = 'spidey-academy-v14';
 
 const ASSETS = [
     '/', '/index.html', '/offline.html',
@@ -17,16 +17,16 @@ const ASSETS = [
     '/assets/webby.png',
     '/icons/icon-192.png',
     '/icons/icon-512.png',
-    './assets/sounds/sfx/click.mp3',
-    './assets/sounds/sfx/correct.mp3',
-    './assets/sounds/sfx/wrong.mp3',
-    './assets/sounds/sfx/pop.mp3',
-    './assets/sounds/sfx/sticker.mp3',
-    './assets/sounds/sfx/whoosh.mp3',
-    './assets/sounds/sfx/celebration.mp3',
-    './assets/sounds/sfx/tap.mp3',
-    './assets/sounds/sfx/star.mp3',
-    './assets/sounds/sfx/coin.mp3'
+    '/assets/sounds/sfx/click.mp3',
+    '/assets/sounds/sfx/correct.mp3',
+    '/assets/sounds/sfx/wrong.mp3',
+    '/assets/sounds/sfx/pop.mp3',
+    '/assets/sounds/sfx/sticker.mp3',
+    '/assets/sounds/sfx/whoosh.mp3',
+    '/assets/sounds/sfx/celebration.mp3',
+    '/assets/sounds/sfx/tap.mp3',
+    '/assets/sounds/sfx/star.mp3',
+    '/assets/sounds/sfx/coin.mp3'
 ];
 
 self.addEventListener('install', event => {

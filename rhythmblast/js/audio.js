@@ -101,9 +101,54 @@ const Audio = (() => {
         reverbDry.connect(masterGain);
     }
 
+    // MP3 sound effect cache
+    const _mp3Cache = {};
+    let _mp3Loaded = false;
+    function _loadMP3Assets() {
+        if (_mp3Loaded) return;
+        _mp3Loaded = true;
+        const c = _getCtx();
+        const manifest = [
+            { key: 'click', src: 'assets/sounds/sfx/click.mp3' },
+            { key: 'correct', src: 'assets/sounds/sfx/correct.mp3' },
+            { key: 'wrong', src: 'assets/sounds/sfx/wrong.mp3' },
+            { key: 'coin', src: 'assets/sounds/sfx/coin.mp3' },
+            { key: 'star', src: 'assets/sounds/sfx/star.mp3' },
+            { key: 'victory', src: 'assets/sounds/sfx/victory.mp3' },
+            { key: 'streak', src: 'assets/sounds/sfx/streak.mp3' },
+            { key: 'hit-perfect', src: 'assets/sounds/sfx/hit-perfect.mp3' },
+            { key: 'hit-good', src: 'assets/sounds/sfx/hit-good.mp3' },
+            { key: 'hit-miss', src: 'assets/sounds/sfx/hit-miss.mp3' },
+            { key: 'combo', src: 'assets/sounds/sfx/combo.mp3' },
+            { key: 'transition', src: 'assets/sounds/sfx/transition.mp3' }
+        ];
+        manifest.forEach(({ key, src }) => {
+            fetch(src)
+                .then(r => { if (!r.ok) throw new Error(); return r.arrayBuffer(); })
+                .then(buf => c.decodeAudioData(buf))
+                .then(decoded => { _mp3Cache[key] = decoded; })
+                .catch(() => {});
+        });
+    }
+    function _playMP3(key, volume = 0.5) {
+        const buf = _mp3Cache[key];
+        if (!buf) return false;
+        if (!settings.sfx) return true;
+        const c = _getCtx();
+        const source = c.createBufferSource();
+        source.buffer = buf;
+        const gain = c.createGain();
+        gain.gain.value = volume;
+        source.connect(gain);
+        gain.connect(sfxGain);
+        source.start(0);
+        return true;
+    }
+
     function unlock() {
         const c = _getCtx();
         if (c.state === 'suspended') c.resume();
+        _loadMP3Assets();
         unlocked = true;
     }
 
@@ -134,6 +179,7 @@ const Audio = (() => {
 
     // === SFX ===
     function perfectHit() {
+        if (_playMP3('hit-perfect', 0.5)) return;
         // Bright, sparkly double chime
         _makeNote(SCALE.E5, 0.12, 'sine', sfxGain, 0.35);
         _makeNote(SCALE.E5 * 2, 0.08, 'sine', sfxGain, 0.15); // octave shimmer
@@ -144,6 +190,7 @@ const Audio = (() => {
     }
 
     function greatHit() {
+        if (_playMP3('hit-good', 0.4)) return;
         // Clean single chime
         _makeNote(SCALE.C5, 0.1, 'sine', sfxGain, 0.3);
         _makeNote(SCALE.E5, 0.06, 'sine', sfxGain, 0.15);
@@ -155,6 +202,7 @@ const Audio = (() => {
     }
 
     function miss() {
+        if (_playMP3('hit-miss', 0.4)) return;
         // Gentle low thud (not punishing for a 6yo)
         _makeNote(160, 0.1, 'triangle', sfxGain, 0.12);
     }
@@ -166,6 +214,7 @@ const Audio = (() => {
     }
 
     function comboMilestone() {
+        if (_playMP3('combo', 0.5)) return;
         // Ascending power-up fanfare
         _makeNote(SCALE.C5, 0.06, 'square', sfxGain, 0.2);
         setTimeout(() => _makeNote(SCALE.E5, 0.06, 'square', sfxGain, 0.22), 50);

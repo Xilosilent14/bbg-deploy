@@ -60,10 +60,58 @@ const Audio = (() => {
         if (ctx && ctx.state === 'suspended') ctx.resume();
     }
 
+    // MP3 sound effect cache
+    const _mp3Cache = {};
+    let _mp3Loaded = false;
+    function _loadMP3Assets() {
+        if (_mp3Loaded) return;
+        _mp3Loaded = true;
+        const c = getCtx();
+        const manifest = [
+            { key: 'click', src: 'assets/sounds/sfx/click.mp3' },
+            { key: 'correct', src: 'assets/sounds/sfx/correct.mp3' },
+            { key: 'wrong', src: 'assets/sounds/sfx/wrong.mp3' },
+            { key: 'coin', src: 'assets/sounds/sfx/coin.mp3' },
+            { key: 'purchase', src: 'assets/sounds/sfx/purchase.mp3' },
+            { key: 'levelup', src: 'assets/sounds/sfx/levelup.mp3' },
+            { key: 'achievement', src: 'assets/sounds/sfx/achievement.mp3' },
+            { key: 'victory', src: 'assets/sounds/sfx/victory.mp3' },
+            { key: 'star', src: 'assets/sounds/sfx/star.mp3' },
+            { key: 'streak', src: 'assets/sounds/sfx/streak.mp3' },
+            { key: 'transition', src: 'assets/sounds/sfx/transition.mp3' },
+            { key: 'block-break', src: 'assets/sounds/sfx/block-break.mp3' },
+            { key: 'swing', src: 'assets/sounds/sfx/swing.mp3' },
+            { key: 'gem', src: 'assets/sounds/sfx/gem.mp3' }
+        ];
+        manifest.forEach(({ key, src }) => {
+            fetch(src)
+                .then(r => { if (!r.ok) throw new Error(); return r.arrayBuffer(); })
+                .then(buf => c.decodeAudioData(buf))
+                .then(decoded => { _mp3Cache[key] = decoded; })
+                .catch(() => {});
+        });
+    }
+    function _playMP3(key, volume = 0.5) {
+        const buf = _mp3Cache[key];
+        if (!buf) return false;
+        if (!soundOn) return true;
+        const c = getCtx();
+        const source = c.createBufferSource();
+        source.buffer = buf;
+        const gain = c.createGain();
+        gain.gain.value = volume;
+        source.connect(gain);
+        gain.connect(c.destination);
+        source.start(0);
+        return true;
+    }
+
     // Must be called from a user gesture (click/tap) to unlock TTS on mobile
     function unlockAudio() {
         // Resume AudioContext
         resumeCtx();
+        // Load MP3 assets on first user interaction
+        _loadMP3Assets();
         // Unlock TTS with a silent utterance on first user gesture
         if (!ttsUnlocked && window.speechSynthesis) {
             const u = new SpeechSynthesisUtterance('');
@@ -93,6 +141,7 @@ const Audio = (() => {
     }
 
     function blockBreak() {
+        if (_playMP3('block-break', 0.5)) return;
         playTone(200, 0.08, 'square', 0.12);
         setTimeout(() => playTone(300, 0.06, 'square', 0.1), 40);
         setTimeout(() => playTone(150, 0.1, 'square', 0.08), 80);
@@ -104,21 +153,25 @@ const Audio = (() => {
     }
 
     function correct() {
+        if (_playMP3('correct', 0.5)) return;
         playTone(523, 0.1, 'square', 0.12);
         setTimeout(() => playTone(659, 0.1, 'square', 0.12), 100);
         setTimeout(() => playTone(784, 0.15, 'square', 0.12), 200);
     }
 
     function wrong() {
+        if (_playMP3('wrong', 0.5)) return;
         playTone(200, 0.15, 'sawtooth', 0.1);
         setTimeout(() => playTone(160, 0.2, 'sawtooth', 0.08), 100);
     }
 
     function click() {
+        if (_playMP3('click', 0.4)) return;
         playTone(800, 0.04, 'square', 0.08);
     }
 
     function levelUp() {
+        if (_playMP3('levelup', 0.5)) return;
         const notes = [523, 659, 784, 1047];
         notes.forEach((n, i) => {
             setTimeout(() => playTone(n, 0.15, 'square', 0.12), i * 120);
@@ -126,6 +179,7 @@ const Audio = (() => {
     }
 
     function achievement() {
+        if (_playMP3('achievement', 0.5)) return;
         const notes = [784, 988, 1175, 1318, 1568];
         notes.forEach((n, i) => {
             setTimeout(() => playTone(n, 0.12, 'triangle', 0.1), i * 80);
@@ -192,6 +246,7 @@ const Audio = (() => {
     }
 
     function gemPickup() {
+        if (_playMP3('gem', 0.5)) return;
         playTone(1200, 0.06, 'sine', 0.1);
         setTimeout(() => playTone(1600, 0.08, 'sine', 0.08), 50);
     }
@@ -212,6 +267,7 @@ const Audio = (() => {
     }
 
     function victory() {
+        if (_playMP3('victory', 0.5)) return;
         const notes = [523, 659, 784, 1047, 784, 1047];
         notes.forEach((n, i) => {
             setTimeout(() => playTone(n, 0.2, 'square', 0.1), i * 150);
@@ -226,6 +282,7 @@ const Audio = (() => {
     }
 
     function milestone() {
+        if (_playMP3('streak', 0.5)) return;
         playTone(784, 0.1, 'triangle', 0.1);
         setTimeout(() => playTone(988, 0.1, 'triangle', 0.1), 80);
         setTimeout(() => playTone(1175, 0.15, 'triangle', 0.1), 160);
@@ -558,8 +615,48 @@ const Audio = (() => {
         if (ttsKeepAlive) { clearInterval(ttsKeepAlive); ttsKeepAlive = null; }
     }
 
+    // V2: Pre-generated TTS cache (Google Cloud Neural voices)
+    const _ttsCache = {};
+    const _ttsPending = new Set();
+    function _tryTTS(key, subdir = 'words', volume = 0.8) {
+        const cacheKey = subdir + '/' + key;
+        const buf = _ttsCache[cacheKey];
+        if (buf) {
+            if (!voiceOn) return true;
+            const c = getCtx();
+            const source = c.createBufferSource();
+            source.buffer = buf;
+            const gain = c.createGain();
+            gain.gain.value = volume;
+            source.connect(gain);
+            gain.connect(c.destination);
+            source.start(0);
+            return true;
+        }
+        if (!_ttsPending.has(cacheKey)) {
+            _ttsPending.add(cacheKey);
+            const src = `assets/sounds/tts/${subdir}/${key}.mp3`;
+            const c = getCtx();
+            fetch(src)
+                .then(r => { if (!r.ok) throw new Error(); return r.arrayBuffer(); })
+                .then(b => c.decodeAudioData(b))
+                .then(decoded => { _ttsCache[cacheKey] = decoded; })
+                .catch(() => {});
+        }
+        return false;
+    }
+
     function speak(text, mode = 'question') {
         if (!voiceOn) return;
+
+        // V2: Try pre-generated TTS for single words
+        const trimmed = (text || '').trim();
+        const singleWord = trimmed.split(/\s+/).length === 1 && /^[a-zA-Z]+$/.test(trimmed);
+        if (singleWord) {
+            const key = trimmed.toLowerCase();
+            if (_tryTTS(key, 'words', 0.8) || _tryTTS(key, 'nonsense', 0.8)) return;
+        }
+
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
         stopTTSKeepAlive();

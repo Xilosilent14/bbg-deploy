@@ -1,5 +1,5 @@
 // Creature Cards — Service Worker
-const CACHE_NAME = 'creature-cards-v15';
+const CACHE_NAME = 'creature-cards-v16';
 const ASSETS = [
     './', './index.html', './css/style.css',
     './css/shared/design-system.css',
@@ -16,7 +16,24 @@ const ASSETS = [
     './assets/creatures/tidal-type.png',
     './assets/creatures/terra-type.png',
     './assets/creatures/spark-type.png',
-    './assets/creatures/shadow-type.png'
+    './assets/creatures/shadow-type.png',
+    './assets/sounds/sfx/click.mp3',
+    './assets/sounds/sfx/correct.mp3',
+    './assets/sounds/sfx/wrong.mp3',
+    './assets/sounds/sfx/coin.mp3',
+    './assets/sounds/sfx/purchase.mp3',
+    './assets/sounds/sfx/levelup.mp3',
+    './assets/sounds/sfx/achievement.mp3',
+    './assets/sounds/sfx/victory.mp3',
+    './assets/sounds/sfx/star.mp3',
+    './assets/sounds/sfx/streak.mp3',
+    './assets/sounds/sfx/transition.mp3',
+    './assets/sounds/sfx/attack.mp3',
+    './assets/sounds/sfx/damage.mp3',
+    './assets/sounds/sfx/heal.mp3',
+    './assets/sounds/sfx/card-reveal.mp3',
+    './assets/sounds/sfx/pack-open.mp3',
+    './assets/sounds/sfx/faint.mp3'
 ];
 
 self.addEventListener('install', e => {

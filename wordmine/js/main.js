@@ -77,6 +77,19 @@ const Main = (() => {
 
     function init() {
         Progress.load();
+        // Sync player name from shared BBG profile
+        try {
+            const activeId = localStorage.getItem('bbg_active_profile');
+            if (activeId) {
+                const profileData = JSON.parse(localStorage.getItem('bbg_profile_' + activeId) || '{}');
+                if (profileData.playerName) {
+                    const d = Progress.get();
+                    if (d.name !== profileData.playerName) {
+                        Progress.setName(profileData.playerName);
+                    }
+                }
+            }
+        } catch (_) {}
         ParentDashboard.init();
         Settings.init();
         wireButtons();

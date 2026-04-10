@@ -36,10 +36,59 @@ const AudioSystem = (() => {
         }
     }
 
+    // MP3 sound effect cache
+    const _mp3Cache = {};
+    let _mp3Loaded = false;
+    function _loadMP3Assets() {
+        if (_mp3Loaded) return;
+        _mp3Loaded = true;
+        if (!_ensureCtx()) return;
+        const manifest = [
+            { key: 'click', src: 'assets/sounds/sfx/click.mp3' },
+            { key: 'correct', src: 'assets/sounds/sfx/correct.mp3' },
+            { key: 'wrong', src: 'assets/sounds/sfx/wrong.mp3' },
+            { key: 'coin', src: 'assets/sounds/sfx/coin.mp3' },
+            { key: 'purchase', src: 'assets/sounds/sfx/purchase.mp3' },
+            { key: 'levelup', src: 'assets/sounds/sfx/levelup.mp3' },
+            { key: 'achievement', src: 'assets/sounds/sfx/achievement.mp3' },
+            { key: 'victory', src: 'assets/sounds/sfx/victory.mp3' },
+            { key: 'star', src: 'assets/sounds/sfx/star.mp3' },
+            { key: 'streak', src: 'assets/sounds/sfx/streak.mp3' },
+            { key: 'transition', src: 'assets/sounds/sfx/transition.mp3' },
+            { key: 'attack', src: 'assets/sounds/sfx/attack.mp3' },
+            { key: 'damage', src: 'assets/sounds/sfx/damage.mp3' },
+            { key: 'heal', src: 'assets/sounds/sfx/heal.mp3' },
+            { key: 'card-reveal', src: 'assets/sounds/sfx/card-reveal.mp3' },
+            { key: 'pack-open', src: 'assets/sounds/sfx/pack-open.mp3' },
+            { key: 'faint', src: 'assets/sounds/sfx/faint.mp3' }
+        ];
+        manifest.forEach(({ key, src }) => {
+            fetch(src)
+                .then(r => { if (!r.ok) throw new Error(); return r.arrayBuffer(); })
+                .then(buf => ctx.decodeAudioData(buf))
+                .then(decoded => { _mp3Cache[key] = decoded; })
+                .catch(() => {});
+        });
+    }
+    function _playMP3(key, volume = 0.5) {
+        const buf = _mp3Cache[key];
+        if (!buf) return false;
+        if (!sfxEnabled) return true;
+        const source = ctx.createBufferSource();
+        source.buffer = buf;
+        const gain = ctx.createGain();
+        gain.gain.value = volume;
+        source.connect(gain);
+        gain.connect(sfxGain);
+        source.start(0);
+        return true;
+    }
+
     function unlock() {
         if (unlocked) return;
         if (!_ensureCtx()) return;
         if (ctx.state === 'suspended') ctx.resume();
+        _loadMP3Assets();
         // Play silent buffer to unlock on iOS/Android
         const buf = ctx.createBuffer(1, 1, 22050);
         const src = ctx.createBufferSource();
@@ -92,25 +141,25 @@ const AudioSystem = (() => {
     // --- SFX Methods ---
 
     function playCorrect() {
+        if (_playMP3('correct', 0.5)) return;
         if (!sfxEnabled || !_ensureCtx()) return;
         const t = ctx.currentTime;
-        // Bright ascending chime: C5, E5, G5
-        _note(523.25, t, 0.15);          // C5
-        _note(659.25, t + 0.1, 0.15);    // E5
-        _note(783.99, t + 0.2, 0.2);     // G5
+        _note(523.25, t, 0.15);
+        _note(659.25, t + 0.1, 0.15);
+        _note(783.99, t + 0.2, 0.2);
     }
 
     function playWrong() {
+        if (_playMP3('wrong', 0.5)) return;
         if (!sfxEnabled || !_ensureCtx()) return;
         const t = ctx.currentTime;
-        // Gentle descending boop
         _osc('triangle', 300, sfxGain, t, 0.3, 200);
     }
 
     function playAttack() {
+        if (_playMP3('attack', 0.5)) return;
         if (!sfxEnabled || !_ensureCtx()) return;
         const t = ctx.currentTime;
-        // Swoosh (noise) + impact (low thud)
         _noise(sfxGain, t, 0.15, 0.25);
         _osc('sine', 150, sfxGain, t + 0.1, 0.2, 60);
     }
@@ -124,22 +173,23 @@ const AudioSystem = (() => {
     }
 
     function playDamage() {
+        if (_playMP3('damage', 0.5)) return;
         if (!sfxEnabled || !_ensureCtx()) return;
         const t = ctx.currentTime;
-        // Low thump
         _osc('sine', 120, sfxGain, t, 0.15, 60);
         _noise(sfxGain, t, 0.08, 0.15);
     }
 
     function playFainted() {
+        if (_playMP3('faint', 0.5)) return;
         if (!sfxEnabled || !_ensureCtx()) return;
         const t = ctx.currentTime;
-        // Descending sad tone
         _osc('sine', 400, sfxGain, t, 0.25, 200);
         _osc('sine', 300, sfxGain, t + 0.2, 0.3, 100);
     }
 
     function playVictory() {
+        if (_playMP3('victory', 0.5)) return;
         if (!sfxEnabled || !_ensureCtx()) return;
         const t = ctx.currentTime;
         // Triumphant fanfare: 4 ascending notes + chord
@@ -163,6 +213,7 @@ const AudioSystem = (() => {
     }
 
     function playCardReveal() {
+        if (_playMP3('card-reveal', 0.5)) return;
         if (!sfxEnabled || !_ensureCtx()) return;
         const t = ctx.currentTime;
         // Quick sparkle arpeggio
@@ -173,6 +224,7 @@ const AudioSystem = (() => {
     }
 
     function playPackOpen() {
+        if (_playMP3('pack-open', 0.5)) return;
         if (!sfxEnabled || !_ensureCtx()) return;
         const t = ctx.currentTime;
         // Magical whoosh + shimmer
@@ -183,6 +235,7 @@ const AudioSystem = (() => {
     }
 
     function playClick() {
+        if (_playMP3('click', 0.4)) return;
         if (!sfxEnabled || !_ensureCtx()) return;
         const t = ctx.currentTime;
         // Soft pop
@@ -231,6 +284,7 @@ const AudioSystem = (() => {
     }
 
     function playHeal() {
+        if (_playMP3('heal', 0.5)) return;
         if (!sfxEnabled || !_ensureCtx()) return;
         const t = ctx.currentTime;
         // Gentle ascending shimmer
@@ -298,6 +352,7 @@ const AudioSystem = (() => {
     }
 
     function playPurchase() {
+        if (_playMP3('purchase', 0.5)) return;
         if (!sfxEnabled || !_ensureCtx()) return;
         const t = ctx.currentTime;
         // Coin-drop chime: descending sparkle

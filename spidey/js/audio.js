@@ -19,8 +19,51 @@ const Audio = (() => {
         try { fn(_ensureCtx()); } catch (e) { /* silent fail */ }
     }
 
+    // MP3 sound effect cache
+    const _mp3Cache = {};
+    let _mp3Loaded = false;
+    function _loadMP3Assets() {
+        if (_mp3Loaded) return;
+        _mp3Loaded = true;
+        const c = _ensureCtx();
+        const manifest = [
+            { key: 'click', src: 'assets/sounds/sfx/click.mp3' },
+            { key: 'correct', src: 'assets/sounds/sfx/correct.mp3' },
+            { key: 'wrong', src: 'assets/sounds/sfx/wrong.mp3' },
+            { key: 'pop', src: 'assets/sounds/sfx/pop.mp3' },
+            { key: 'sticker', src: 'assets/sounds/sfx/sticker.mp3' },
+            { key: 'whoosh', src: 'assets/sounds/sfx/whoosh.mp3' },
+            { key: 'celebration', src: 'assets/sounds/sfx/celebration.mp3' },
+            { key: 'tap', src: 'assets/sounds/sfx/tap.mp3' },
+            { key: 'star', src: 'assets/sounds/sfx/star.mp3' },
+            { key: 'coin', src: 'assets/sounds/sfx/coin.mp3' }
+        ];
+        manifest.forEach(({ key, src }) => {
+            fetch(src)
+                .then(r => { if (!r.ok) throw new Error(); return r.arrayBuffer(); })
+                .then(buf => c.decodeAudioData(buf))
+                .then(decoded => { _mp3Cache[key] = decoded; })
+                .catch(() => {});
+        });
+    }
+    function _playMP3(key, volume = 0.5) {
+        const buf = _mp3Cache[key];
+        if (!buf) return false;
+        if (!enabled) return true;
+        const c = _ensureCtx();
+        const source = c.createBufferSource();
+        source.buffer = buf;
+        const gain = c.createGain();
+        gain.gain.value = volume;
+        source.connect(gain);
+        gain.connect(c.destination);
+        source.start(0);
+        return true;
+    }
+
     // Bright happy chime for correct answers
     function playCorrect() {
+        if (_playMP3('correct', 0.5)) return;
         _play(ctx => {
             const now = ctx.currentTime;
             [523, 659, 784].forEach((freq, i) => {
@@ -39,6 +82,7 @@ const Audio = (() => {
 
     // Soft gentle boop for wrong answers (not harsh)
     function playWrong() {
+        if (_playMP3('wrong', 0.4)) return;
         _play(ctx => {
             const now = ctx.currentTime;
             const osc = ctx.createOscillator();
@@ -56,6 +100,7 @@ const Audio = (() => {
 
     // Satisfying pop for catching bugs
     function playPop() {
+        if (_playMP3('pop', 0.5)) return;
         _play(ctx => {
             const now = ctx.currentTime;
             const osc = ctx.createOscillator();
@@ -73,6 +118,7 @@ const Audio = (() => {
 
     // Triumphant fanfare for sticker earned
     function playSticker() {
+        if (_playMP3('sticker', 0.5)) return;
         _play(ctx => {
             const now = ctx.currentTime;
             const notes = [523, 659, 784, 1047];
@@ -92,6 +138,7 @@ const Audio = (() => {
 
     // Soft click for button taps
     function playTap() {
+        if (_playMP3('tap', 0.4)) return;
         _play(ctx => {
             const now = ctx.currentTime;
             const osc = ctx.createOscillator();
@@ -108,6 +155,7 @@ const Audio = (() => {
 
     // Big celebration sound
     function playCelebration() {
+        if (_playMP3('celebration', 0.5)) return;
         _play(ctx => {
             const now = ctx.currentTime;
             const melody = [523, 587, 659, 784, 880, 1047];
@@ -127,6 +175,7 @@ const Audio = (() => {
 
     // Whoosh for screen transitions
     function playWhoosh() {
+        if (_playMP3('whoosh', 0.5)) return;
         _play(ctx => {
             const now = ctx.currentTime;
             const bufferSize = ctx.sampleRate * 0.2;
@@ -156,6 +205,7 @@ const Audio = (() => {
     // Unlock audio context on first user interaction
     function unlock() {
         _ensureCtx();
+        _loadMP3Assets();
     }
 
     return {

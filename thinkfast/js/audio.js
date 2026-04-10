@@ -66,6 +66,39 @@ const Audio = {
         return true;
     },
 
+    // V39: Pre-generated TTS cache (Google Cloud Neural voices)
+    // Loaded on-demand per word/phrase, much higher quality than browser TTS
+    _ttsCache: {},
+    _ttsPending: new Set(),
+    _playTTS(key, subdir = 'words', volume = 0.8) {
+        const cacheKey = subdir + '/' + key;
+        const buf = this._ttsCache[cacheKey];
+        if (buf) {
+            if (!Settings.get('voice')) return true;
+            const ctx = this._getCtx();
+            const source = ctx.createBufferSource();
+            source.buffer = buf;
+            const gain = ctx.createGain();
+            gain.gain.value = volume;
+            source.connect(gain);
+            gain.connect(ctx.destination);
+            source.start(0);
+            return true;
+        }
+        // Try to load on-demand (for next time)
+        if (!this._ttsPending.has(cacheKey)) {
+            this._ttsPending.add(cacheKey);
+            const src = `assets/sounds/tts/${subdir}/${key}.mp3`;
+            const ctx = this._getCtx();
+            fetch(src)
+                .then(r => { if (!r.ok) throw new Error(); return r.arrayBuffer(); })
+                .then(b => ctx.decodeAudioData(b))
+                .then(decoded => { this._ttsCache[cacheKey] = decoded; })
+                .catch(() => {});
+        }
+        return false;
+    },
+
     // V4: Music state
     _musicPlaying: null, // 'menu' | 'race' | 'boss' | 'results' | 'garage' | null
     _musicNodes: [],
@@ -227,10 +260,23 @@ const Audio = {
 
     // Text-to-speech with music ducking
     speak(text, options = {}) {
-        if (!this.synth || !Settings.get('voice')) return Promise.resolve();
+        if (!Settings.get('voice')) return Promise.resolve();
 
         // V36 fix: Guard against empty text (can hang some browsers)
         if (!text || !text.trim()) return Promise.resolve();
+
+        // V39: Try pre-generated TTS for single words (sight words, nonsense words)
+        const trimmed = text.trim();
+        const singleWord = trimmed.split(/\s+/).length === 1 && /^[a-zA-Z]+$/.test(trimmed);
+        if (singleWord) {
+            const key = trimmed.toLowerCase();
+            // Try sight word first, then nonsense word
+            if (this._playTTS(key, 'words', 0.8) || this._playTTS(key, 'nonsense', 0.8)) {
+                return Promise.resolve();
+            }
+        }
+
+        if (!this.synth) return Promise.resolve();
 
         // V36 fix: Increment speak generation so stale retries are invalidated
         this._speakGen = (this._speakGen || 0) + 1;

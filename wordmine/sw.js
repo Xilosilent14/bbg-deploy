@@ -1,5 +1,5 @@
 // Word Mine — Service Worker for offline support
-const CACHE_NAME = 'wordmine-v51';
+const CACHE_NAME = 'wordmine-v53';
 const ASSETS = [
     './',
     './index.html',
@@ -50,7 +50,21 @@ const ASSETS = [
     './assets/sprites/pets.png',
     './icons/icon-192.png',
     './icons/icon-512.png',
-    './icons/icon-192-maskable.png'
+    './icons/icon-192-maskable.png',
+    './assets/sounds/sfx/click.mp3',
+    './assets/sounds/sfx/correct.mp3',
+    './assets/sounds/sfx/wrong.mp3',
+    './assets/sounds/sfx/coin.mp3',
+    './assets/sounds/sfx/purchase.mp3',
+    './assets/sounds/sfx/levelup.mp3',
+    './assets/sounds/sfx/achievement.mp3',
+    './assets/sounds/sfx/victory.mp3',
+    './assets/sounds/sfx/star.mp3',
+    './assets/sounds/sfx/streak.mp3',
+    './assets/sounds/sfx/transition.mp3',
+    './assets/sounds/sfx/block-break.mp3',
+    './assets/sounds/sfx/swing.mp3',
+    './assets/sounds/sfx/gem.mp3'
 ];
 
 self.addEventListener('install', e => {

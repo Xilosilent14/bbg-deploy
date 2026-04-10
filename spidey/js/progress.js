@@ -35,7 +35,7 @@ const Progress = (() => {
 
     const DEFAULTS = {
         version: VERSION,
-        playerName: 'Asher',
+        playerName: '',
         gradeLevel: 0,
         totalCorrect: 0,
         totalAttempts: 0,
@@ -244,7 +244,20 @@ const Progress = (() => {
 
     function getStickers() { if (!data) load(); return data.stickers; }
     function getStickerCount() { if (!data) load(); return data.stickers.length; }
-    function getPlayerName() { if (!data) load(); return data.playerName; }
+    function getPlayerName() {
+        if (!data) load();
+        // Check shared BBG profile first
+        try {
+            const activeId = localStorage.getItem('bbg_active_profile');
+            if (activeId) {
+                const profileData = JSON.parse(localStorage.getItem('bbg_profile_' + activeId) || '{}');
+                if (profileData.playerName) return profileData.playerName;
+            }
+            const shared = JSON.parse(localStorage.getItem('bbg_shared_profile') || '{}');
+            if (shared.playerName) return shared.playerName;
+        } catch (_) {}
+        return data.playerName || 'Player';
+    }
     function setPlayerName(name) { if (!data) load(); data.playerName = name; save(); }
     function getLevel() { if (!data) load(); return data.level; }
     function getLevelName() { if (!data) load(); return LEVEL_NAMES[Math.min(data.level - 1, LEVEL_NAMES.length - 1)]; }

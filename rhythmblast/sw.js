@@ -1,5 +1,5 @@
 // Rhythm Blast — Service Worker
-const CACHE_NAME = 'rhythm-blast-v16';
+const CACHE_NAME = 'rhythm-blast-v17';
 const ASSETS = [
     './',
     './index.html',
@@ -19,7 +19,19 @@ const ASSETS = [
     './js/ecosystem.js',
     './js/otb-config.js',
     './assets/banner.png',
-    './manifest.json'
+    './manifest.json',
+    './assets/sounds/sfx/click.mp3',
+    './assets/sounds/sfx/correct.mp3',
+    './assets/sounds/sfx/wrong.mp3',
+    './assets/sounds/sfx/coin.mp3',
+    './assets/sounds/sfx/star.mp3',
+    './assets/sounds/sfx/victory.mp3',
+    './assets/sounds/sfx/streak.mp3',
+    './assets/sounds/sfx/hit-perfect.mp3',
+    './assets/sounds/sfx/hit-good.mp3',
+    './assets/sounds/sfx/hit-miss.mp3',
+    './assets/sounds/sfx/combo.mp3',
+    './assets/sounds/sfx/transition.mp3'
 ];
 
 self.addEventListener('install', e => {

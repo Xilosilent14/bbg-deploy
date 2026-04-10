@@ -22,6 +22,18 @@ const Main = {
         this._updateTitleScreen();
         this._showScreen('title');
 
+        // Sync player name from shared BBG profile if available
+        try {
+            const activeId = localStorage.getItem('bbg_active_profile');
+            if (activeId) {
+                const profileData = JSON.parse(localStorage.getItem('bbg_profile_' + activeId) || '{}');
+                if (profileData.playerName && Progress.data.playerName !== profileData.playerName) {
+                    Progress.data.playerName = profileData.playerName;
+                    Progress.save();
+                }
+            }
+        } catch (_) {}
+
         // First-time welcome flow
         if (!Progress.data.playerName && Progress.data.totalRaces === 0) {
             this._showWelcome();

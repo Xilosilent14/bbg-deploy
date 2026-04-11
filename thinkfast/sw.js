@@ -1,4 +1,4 @@
-const CACHE_NAME = 'think-fast-v91';
+const CACHE_NAME = 'think-fast-v93';
 const ASSETS = [
     '/',
     '/index.html',
@@ -10,6 +10,7 @@ const ASSETS = [
     '/css/shared/fonts/nunito-semibold.woff2',
     '/js/otb-config.js',
     '/js/ecosystem.js',
+    '/js/cloud-tts.js',
     '/js/main.js',
     '/js/game-renderer.js',
     '/js/game.js',

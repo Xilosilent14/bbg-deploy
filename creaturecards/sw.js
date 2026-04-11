@@ -1,5 +1,5 @@
 // Creature Cards — Service Worker
-const CACHE_NAME = 'creature-cards-v23';
+const CACHE_NAME = 'creature-cards-v25';
 const ASSETS = [
     './', './index.html', './css/style.css',
     './css/shared/design-system.css',
@@ -10,7 +10,7 @@ const ASSETS = [
     './js/question-bridge.js', './js/collection.js',
     './js/progress.js', './js/audio.js', './js/main.js',
     './js/math-data.js', './js/reading-data.js',
-    './js/ecosystem.js', './js/otb-config.js',
+    './js/ecosystem.js', './js/cloud-tts.js', './js/otb-config.js',
     './manifest.json',
     './assets/creatures/ember-type.png',
     './assets/creatures/tidal-type.png',

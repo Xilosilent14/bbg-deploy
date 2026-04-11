@@ -1,9 +1,9 @@
-const CACHE_NAME = 'spidey-academy-v17';
+const CACHE_NAME = 'spidey-academy-v19';
 
 const ASSETS = [
     '/', '/index.html', '/offline.html',
     '/css/style.css', '/css/shared/design-system.css',
-    '/js/otb-config.js', '/js/ecosystem.js',
+    '/js/otb-config.js', '/js/ecosystem.js', '/js/cloud-tts.js',
     '/js/voice.js', '/js/audio.js', '/js/progress.js',
     '/js/celebration.js', '/js/character.js',
     '/js/backgrounds.js', '/js/badges.js',

@@ -9,8 +9,13 @@ const Audio = {
     _ctx: null,
     _getCtx() {
         if (!this._ctx) {
-            this._ctx = new (window.AudioContext || window.webkitAudioContext)();
+            try {
+                this._ctx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                return null; // SES or browser restriction — audio degrades gracefully
+            }
         }
+        if (!this._ctx) return null;
         // V17: Resume suspended context (mobile browsers suspend after bg/fg)
         if (this._ctx.state === 'suspended') {
             this._ctx.resume().catch(() => {});

@@ -24,7 +24,11 @@ const Audio = (() => {
 
     function _getCtx() {
         if (!ctx) {
-            ctx = new (window.AudioContext || window.webkitAudioContext)();
+            try {
+                ctx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                return null; // SES or browser restriction — audio degrades gracefully
+            }
 
             // Master compressor for even volume
             compressor = ctx.createDynamicsCompressor();

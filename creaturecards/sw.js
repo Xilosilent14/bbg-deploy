@@ -1,5 +1,5 @@
 // Creature Cards — Service Worker
-const CACHE_NAME = 'creature-cards-v21';
+const CACHE_NAME = 'creature-cards-v22';
 const ASSETS = [
     './', './index.html', './css/style.css',
     './css/shared/design-system.css',

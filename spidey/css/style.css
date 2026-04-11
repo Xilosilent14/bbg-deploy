@@ -495,6 +495,55 @@ html, body {
     right: 0;
     z-index: 5;
 }
+/* Pause overlay */
+.activity-pause-btn {
+    background: rgba(0,0,0,0.4);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.activity-pause-btn:hover { background: rgba(0,0,0,0.6); }
+
+.pause-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+}
+.pause-overlay.active { display: flex; }
+.pause-box {
+    background: linear-gradient(135deg, #1a1a3e, #2a2a5e);
+    border: 3px solid var(--game-accent, #e23636);
+    border-radius: 20px;
+    padding: 30px 40px;
+    text-align: center;
+    min-width: 240px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+.pause-box h2 {
+    font-family: var(--otb-font-heading, 'Fredoka One', cursive);
+    color: #fff;
+    margin: 0 0 20px;
+    font-size: 1.4rem;
+}
+.pause-box button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+.pause-box button:last-child { margin-bottom: 0; }
+
 .round-counter {
     background: rgba(255,255,255,0.1);
     padding: 3px 12px;

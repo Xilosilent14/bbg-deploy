@@ -18,6 +18,9 @@ const Main = {
     _titleCarAnimating: false,
 
     init() {
+        // Set BBG logo to hub URL
+        if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const l=document.getElementById('bbg-logo-link');if(l)l.href=u;}
+
         this._bindButtons();
         this._updateTitleScreen();
         this._showScreen('title');

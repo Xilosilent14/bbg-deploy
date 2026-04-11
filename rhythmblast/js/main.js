@@ -61,6 +61,9 @@ const Main = (() => {
     }
 
     function init() {
+        // Set BBG logo to hub URL
+        if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const l=document.getElementById('bbg-logo-link');if(l)l.href=u;}
+
         // Apply saved settings
         const settings = Progress.getSettings();
         Audio.setSettings(settings);

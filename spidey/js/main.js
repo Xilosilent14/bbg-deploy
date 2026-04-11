@@ -5,6 +5,7 @@
 const Main = (() => {
     let currentScreen = 'splash';
     let currentActivity = null;
+    let paused = false;
     let sessionStartTime = null;
     let roundCorrect = 0;
     let roundTotal = 0;
@@ -19,6 +20,9 @@ const Main = (() => {
     ];
 
     function init() {
+        // Set BBG logo to hub URL
+        if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const l=document.getElementById('bbg-logo-link');if(l)l.href=u;const l2=document.getElementById('title-bbg-logo-link');if(l2)l2.href=u;}
+
         Progress.load();
         Voice.init();
         Character.init();
@@ -175,6 +179,8 @@ const Main = (() => {
         if (!act) return;
 
         currentActivity = act;
+        paused = false;
+        document.getElementById('activity-pause-overlay').classList.remove('active');
         sessionStartTime = sessionStartTime || Date.now();
         roundCorrect = 0;
         roundTotal = 0;
@@ -361,6 +367,16 @@ const Main = (() => {
         }
     }
 
+    function _pauseActivity() {
+        paused = true;
+        document.getElementById('activity-pause-overlay').classList.add('active');
+    }
+
+    function _resumeActivity() {
+        paused = false;
+        document.getElementById('activity-pause-overlay').classList.remove('active');
+    }
+
     function _bindButtons() {
         document.getElementById('btn-title-play')?.addEventListener('click', () => {
             Audio.playTap();
@@ -389,6 +405,25 @@ const Main = (() => {
         document.getElementById('btn-activity-home')?.addEventListener('click', () => {
             Audio.playTap();
             _showScreen('home');
+        });
+        document.getElementById('btn-activity-pause')?.addEventListener('click', () => {
+            Audio.playTap();
+            _pauseActivity();
+        });
+        document.getElementById('btn-activity-resume')?.addEventListener('click', () => {
+            Audio.playTap();
+            _resumeActivity();
+        });
+        document.getElementById('btn-activity-quit')?.addEventListener('click', () => {
+            Audio.playTap();
+            _resumeActivity();
+            _stopActivity();
+            _showScreen('activities');
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && currentScreen === 'activity' && !paused) {
+                _pauseActivity();
+            }
         });
         document.getElementById('btn-hub')?.addEventListener('click', () => {
             window.location.href = OTBConfig.getHubUrl();

@@ -290,6 +290,54 @@ html, body {
     transition: background 0.2s;
 }
 .battle-exit-btn:hover { background: rgba(0,0,0,0.7); color: #fff; }
+
+.battle-pause-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 20;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    min-width: auto;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--otb-border);
+    border-radius: 8px;
+    color: var(--otb-text-muted);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.battle-pause-btn:hover { background: rgba(0,0,0,0.7); color: #fff; }
+
+.pause-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 50;
+    justify-content: center;
+    align-items: center;
+}
+.pause-overlay.active { display: flex; }
+.pause-box {
+    background: var(--otb-surface);
+    border: 2px solid var(--game-accent);
+    border-radius: 16px;
+    padding: 30px 40px;
+    text-align: center;
+    min-width: 220px;
+}
+.pause-box h2 {
+    font-family: var(--otb-font-heading);
+    color: #fff;
+    margin: 0 0 20px;
+    font-size: 1.3rem;
+}
+.pause-box button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+.pause-box button:last-child { margin-bottom: 0; }
 .battle-area { flex: 1; position: relative; }
 .battle-creatures {
     display: flex; justify-content: space-between; align-items: center;

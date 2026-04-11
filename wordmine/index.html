@@ -55,7 +55,7 @@
     <!-- ========== TITLE SCREEN ========== -->
     <div id="title-screen" class="screen">
         <div class="otb-badge" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:15;">Blake Boys Gaming</div>
-        <a id="bbg-logo-link" href="/" class="bbg-corner-logo-link" aria-label="Return to Hub"><img src="assets/bbg-logo.png" alt="BBG" class="bbg-corner-logo"></a>
+        <a id="bbg-logo-link" href="#" class="bbg-corner-logo-link" aria-label="Return to Hub"><img src="assets/bbg-logo.png" alt="BBG" class="bbg-corner-logo"></a>
         <div class="title-content">
             <div class="title-scene">
                 <canvas id="title-canvas" width="320" height="180"></canvas>
@@ -480,7 +480,7 @@
     <script src="js/ecosystem.js?v=1"></script>
     <script src="js/main.js?v=38"></script>
     <script>
-        if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const h=document.getElementById('hub-link');if(h)h.href=u;const l=document.getElementById('bbg-logo-link');if(l)l.href=u;}
+        setTimeout(()=>{if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const h=document.getElementById('hub-link');if(h)h.href=u;const l=document.getElementById('bbg-logo-link');if(l)l.href=u;}},0);
         if('serviceWorker' in navigator) {
             const swPath = (typeof OTBConfig !== 'undefined' && !OTBConfig.isLocal) ? '/sw.js' : 'sw.js';
             navigator.serviceWorker.register(swPath).catch(() => {});

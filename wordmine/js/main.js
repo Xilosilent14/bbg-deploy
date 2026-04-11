@@ -76,6 +76,9 @@ const Main = (() => {
     };
 
     function init() {
+        // Set BBG logo to hub URL
+        if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const l=document.getElementById('bbg-logo-link');if(l)l.href=u;}
+
         Progress.load();
         // Sync player name from shared BBG profile
         try {

@@ -43,7 +43,7 @@
         <div class="title-sparkle" style="top:70%;left:45%;animation-delay:0.6s;"></div>
 
         <div class="otb-badge" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:15;">Blake Boys Gaming</div>
-        <a id="bbg-logo-link" href="/" class="bbg-corner-logo-link" aria-label="Return to Hub"><img src="assets/bbg-logo.png" alt="BBG" class="bbg-corner-logo"></a>
+        <a id="bbg-logo-link" href="#" class="bbg-corner-logo-link" aria-label="Return to Hub"><img src="assets/bbg-logo.png" alt="BBG" class="bbg-corner-logo"></a>
         <div class="title-content">
 
             <!-- Card fan behind title -->
@@ -118,6 +118,7 @@
     <!-- Battle Screen -->
     <div id="screen-battle" class="screen">
         <button class="otb-btn otb-btn-small battle-exit-btn" id="btn-battle-exit" aria-label="Exit Battle">&#9664; Exit</button>
+        <button class="otb-btn otb-btn-small battle-pause-btn" id="btn-battle-pause" aria-label="Pause">&#9208;</button>
         <div class="battle-area">
             <div class="battle-creatures">
                 <div class="battle-creature" id="player-creature">
@@ -156,6 +157,13 @@
                 <button class="otb-btn otb-btn-small" id="btn-swap-cancel" aria-label="Cancel Swap">Cancel</button>
             </div>
             <div class="swap-bench" id="swap-bench"></div>
+        </div>
+        <div class="pause-overlay" id="battle-pause-overlay">
+            <div class="pause-box">
+                <h2>&#9208; Paused</h2>
+                <button class="otb-btn otb-btn-primary" id="btn-battle-resume">&#9654; Resume</button>
+                <button class="otb-btn otb-btn-small" id="btn-battle-quit">&#127968; Quit Battle</button>
+            </div>
         </div>
     </div>
 
@@ -279,7 +287,7 @@
     <script src="js/achievements.js"></script>
     <script src="js/main.js"></script>
     <script>
-        if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const h=document.getElementById('hub-link');if(h)h.href=u;const l=document.getElementById('bbg-logo-link');if(l)l.href=u;}
+        setTimeout(()=>{if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const h=document.getElementById('hub-link');if(h)h.href=u;const l=document.getElementById('bbg-logo-link');if(l)l.href=u;}},0);
         if('serviceWorker' in navigator) {
             const swPath = (typeof OTBConfig !== 'undefined' && !OTBConfig.isLocal) ? '/sw.js' : 'sw.js';
             navigator.serviceWorker.register(swPath).catch(() => {});

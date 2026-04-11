@@ -11,6 +11,7 @@
     let _battleStartTime = 0;
     let _battleQuestionsTotal = 0;
     let _battleQuestionsCorrect = 0;
+    let battlePaused = false;
 
     // === TTS for question reading (kids can't read yet) ===
     let _ttsVoice = null;
@@ -195,6 +196,9 @@
     }
 
     function init() {
+        // Set BBG logo to hub URL
+        if(typeof OTBConfig!=='undefined'){const u=OTBConfig.getHubUrl();const l=document.getElementById('bbg-logo-link');if(l)l.href=u;}
+
         // Initialize audio system
         AudioSystem.init();
         // Unlock audio on first user interaction (required for mobile)
@@ -244,6 +248,29 @@
             AudioSystem.playClick();
             AudioSystem.stopMusic();
             showScreen('title');
+        });
+
+        // Pause
+        document.getElementById('btn-battle-pause').addEventListener('click', () => {
+            AudioSystem.playClick();
+            _pauseBattle();
+        });
+        document.getElementById('btn-battle-resume').addEventListener('click', () => {
+            AudioSystem.playClick();
+            _resumeBattle();
+        });
+        document.getElementById('btn-battle-quit').addEventListener('click', () => {
+            AudioSystem.playClick();
+            _resumeBattle();
+            AudioSystem.stopMusic();
+            showScreen('title');
+        });
+
+        // Auto-pause on tab switch
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && currentScreen === 'battle' && !battlePaused) {
+                _pauseBattle();
+            }
         });
 
         // Battle actions
@@ -487,7 +514,21 @@
     }
 
     // === BATTLE FLOW ===
+    function _pauseBattle() {
+        battlePaused = true;
+        document.getElementById('battle-pause-overlay').classList.add('active');
+        AudioSystem.pauseMusic && AudioSystem.pauseMusic();
+    }
+
+    function _resumeBattle() {
+        battlePaused = false;
+        document.getElementById('battle-pause-overlay').classList.remove('active');
+        AudioSystem.resumeMusic && AudioSystem.resumeMusic();
+    }
+
     function _startBattle(zone, tier) {
+        battlePaused = false;
+        document.getElementById('battle-pause-overlay').classList.remove('active');
         currentZone = zone;
         currentTier = tier;
 

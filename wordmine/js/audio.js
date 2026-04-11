@@ -461,14 +461,22 @@ const Audio = (() => {
         }
     };
 
+    // MP3 background music
+    let _bgmAudio = null;
     function startMusic(type = 'game') {
-        // Map legacy type names to biomes
+        // Use MP3 loop instead of synth biome music
+        if (!_bgmAudio && musicOn) {
+            _bgmAudio = new Audio('assets/sounds/music/bgm-mine.mp3');
+            _bgmAudio.loop = true;
+            _bgmAudio.volume = 0.15;
+            _bgmAudio.play().catch(() => {});
+        }
+
+        // Legacy synth music below (kept as fallback)
         let biome = type;
         if (type === 'game') {
-            // Use the player's current world biome
             try { biome = Progress.get().world || 'plains'; } catch (e) { biome = 'plains'; }
         }
-        // If same biome music is already playing, do nothing
         if (musicPlaying && currentBiome === biome) return;
 
         stopMusic();
@@ -564,6 +572,7 @@ const Audio = (() => {
     }
 
     function stopMusic() {
+        if (_bgmAudio) { _bgmAudio.pause(); _bgmAudio.currentTime = 0; _bgmAudio = null; }
         if (!musicNodes) return;
         try {
             const c = getCtx();

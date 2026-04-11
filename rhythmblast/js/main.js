@@ -164,8 +164,19 @@ const Main = (() => {
         // Screen-specific setup
         if (name === 'songs') _buildSongGrid();
         if (name === 'achievements') _buildAchievementsScreen();
-        if (name === 'title') { _updatePlayerInfo(); _startTitleAnim(); }
-        else { _stopTitleAnim(); }
+        if (name === 'title') {
+            _updatePlayerInfo(); _startTitleAnim();
+            // Play menu music
+            if (!window._rbBgm) {
+                window._rbBgm = new Audio('assets/sounds/music/bgm-menu.mp3');
+                window._rbBgm.loop = true;
+                window._rbBgm.volume = 0.15;
+            }
+            window._rbBgm.play().catch(() => {});
+        } else {
+            _stopTitleAnim();
+            if (window._rbBgm && name === 'game') { window._rbBgm.pause(); window._rbBgm.currentTime = 0; }
+        }
     }
 
     function _updatePlayerInfo() {

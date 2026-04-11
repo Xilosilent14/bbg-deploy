@@ -718,7 +718,7 @@ const Audio = (() => {
     }
 
     function speakWord(word) {
-        speak(word, 'word');
+        speak('Find the word ' + word, 'word');
     }
 
     // Settings

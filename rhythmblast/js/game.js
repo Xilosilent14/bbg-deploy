@@ -168,9 +168,27 @@ const Game = (() => {
         setTimeout(() => {
             document.getElementById('question-phase').style.display = 'none';
             qPhase = null;
-            // Resume rhythm
+            // Resume rhythm with tap-on-beat notes
             running = true;
             Audio.startSong(currentSong, _onBeat);
+            // Spawn 4-6 simple rhythm notes for the kid to tap
+            const rhythmCount = 4 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < rhythmCount; i++) {
+                const lane = Math.floor(Math.random() * LANES);
+                activeNotes.push({
+                    text: '●',
+                    lane: lane,
+                    type: 'rhythm',
+                    isCorrect: true,
+                    hitBeat: beatsElapsed + i * 2,
+                    y: SPAWN_Y - (i * noteSpeed * 30),
+                    spawned: true,
+                    hit: false,
+                    missed: false,
+                    alpha: 1
+                });
+                totalNotes++;
+            }
             _loop();
         }, correct ? 1200 : 1800);
     }

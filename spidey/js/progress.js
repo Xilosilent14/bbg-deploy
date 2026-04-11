@@ -256,6 +256,13 @@ const Progress = (() => {
             const shared = JSON.parse(localStorage.getItem('bbg_shared_profile') || '{}');
             if (shared.playerName) return shared.playerName;
         } catch (_) {}
+        // Try ecosystem profile as last resort before local data
+        try {
+            if (typeof OTBEcosystem !== 'undefined') {
+                const ep = OTBEcosystem.getProfile();
+                if (ep && ep.playerName) return ep.playerName;
+            }
+        } catch (_) {}
         return data.playerName || 'Player';
     }
     function setPlayerName(name) { if (!data) load(); data.playerName = name; save(); }

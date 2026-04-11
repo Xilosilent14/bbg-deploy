@@ -30,13 +30,13 @@ const World = (() => {
     // Preload all images
     function preloadImages() {
         Object.entries(BG_PATHS).forEach(([key, path]) => {
-            const img = new Image();
+            const img = document.createElement('img');
             img.src = path;
             bgImages[key] = img;
         });
-        titleLogoImg = new Image();
+        titleLogoImg = document.createElement('img');
         titleLogoImg.src = 'assets/title-logo.png';
-        spritesheetImg = new Image();
+        spritesheetImg = document.createElement('img');
         spritesheetImg.src = 'assets/spritesheet.png';
     }
     preloadImages();

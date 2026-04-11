@@ -76,7 +76,7 @@ const Sprites = (() => {
 
         sheetNames.forEach(name => {
             const cfg = SHEET_CONFIG[name];
-            const img = new Image();
+            const img = document.createElement('img');
             img.crossOrigin = 'anonymous';
             img.onload = () => {
                 sheets[name] = img;

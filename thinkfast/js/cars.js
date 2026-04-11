@@ -149,7 +149,7 @@ const CorvetteRenderer = {
     loadSprite(genId) {
         if (this._spriteStatus[genId]) return; // already loading/loaded
         this._spriteStatus[genId] = 'loading';
-        const img = new Image();
+        const img = document.createElement('img');
         img.onload = () => {
             this._sprites[genId] = img;
             this._computeCropBounds(genId, img);

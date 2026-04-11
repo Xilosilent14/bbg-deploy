@@ -8,7 +8,13 @@ const Audio = (() => {
     let voiceOn = true;
 
     function getCtx() {
-        if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!ctx) {
+            try {
+                ctx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                return null; // SES lockdown or browser restriction
+            }
+        }
         return ctx;
     }
 

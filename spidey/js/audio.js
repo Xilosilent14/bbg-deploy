@@ -207,7 +207,7 @@ const Audio = (() => {
     let _musicOn = true;
     function startMusic() {
         if (!_musicOn || _bgm) return;
-        _bgm = new Audio('assets/sounds/music/bgm-play.mp3');
+        _bgm = document.createElement('audio'); _bgm.src = 'assets/sounds/music/bgm-play.mp3';
         _bgm.loop = true;
         _bgm.volume = 0.15;
         _bgm.play().catch(() => {});

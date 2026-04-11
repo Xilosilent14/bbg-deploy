@@ -168,7 +168,7 @@ const Main = (() => {
             _updatePlayerInfo(); _startTitleAnim();
             // Play menu music
             if (!window._rbBgm) {
-                window._rbBgm = new Audio('assets/sounds/music/bgm-menu.mp3');
+                window._rbBgm = document.createElement('audio'); window._rbBgm.src = 'assets/sounds/music/bgm-menu.mp3';
                 window._rbBgm.loop = true;
                 window._rbBgm.volume = 0.15;
             }

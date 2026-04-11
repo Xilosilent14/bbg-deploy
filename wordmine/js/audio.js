@@ -466,7 +466,7 @@ const Audio = (() => {
     function startMusic(type = 'game') {
         // Use MP3 loop instead of synth biome music
         if (!_bgmAudio && musicOn) {
-            _bgmAudio = new Audio('assets/sounds/music/bgm-mine.mp3');
+            _bgmAudio = document.createElement('audio'); _bgmAudio.src = 'assets/sounds/music/bgm-mine.mp3';
             _bgmAudio.loop = true;
             _bgmAudio.volume = 0.15;
             _bgmAudio.play().catch(() => {});

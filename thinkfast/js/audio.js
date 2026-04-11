@@ -434,7 +434,8 @@ const Audio = {
     _bgmAudio: null,
     _startBGM(src, volume) {
         this._stopBGM();
-        this._bgmAudio = new Audio(src);
+        this._bgmAudio = document.createElement('audio');
+        this._bgmAudio.src = src;
         this._bgmAudio.loop = true;
         this._bgmAudio.volume = volume || 0.15;
         this._bgmAudio.play().catch(() => {});

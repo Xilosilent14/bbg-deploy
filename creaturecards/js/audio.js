@@ -487,7 +487,7 @@ const AudioSystem = (() => {
     function startTitleMusic() {
         if (!musicEnabled) return;
         stopMusic();
-        _bgmAudio = new Audio('assets/sounds/music/bgm-menu.mp3');
+        _bgmAudio = document.createElement('audio'); _bgmAudio.src = 'assets/sounds/music/bgm-menu.mp3';
         _bgmAudio.loop = true;
         _bgmAudio.volume = 0.18;
         _bgmAudio.play().catch(() => {});

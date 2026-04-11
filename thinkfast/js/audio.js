@@ -433,12 +433,14 @@ const Audio = {
     // V41: MP3 background music (replaces synth for menu)
     _bgmAudio: null,
     _startBGM(src, volume) {
-        this._stopBGM();
-        this._bgmAudio = document.createElement('audio');
-        this._bgmAudio.src = src;
-        this._bgmAudio.loop = true;
-        this._bgmAudio.volume = volume || 0.15;
-        this._bgmAudio.play().catch(() => {});
+        try {
+            this._stopBGM();
+            this._bgmAudio = document.createElement('audio');
+            this._bgmAudio.src = src;
+            this._bgmAudio.loop = true;
+            this._bgmAudio.volume = volume || 0.15;
+            this._bgmAudio.play().catch(() => {});
+        } catch (e) { console.warn('BGM failed:', e.message); }
     },
     _stopBGM() {
         if (this._bgmAudio) { this._bgmAudio.pause(); this._bgmAudio.currentTime = 0; this._bgmAudio = null; }

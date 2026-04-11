@@ -166,12 +166,9 @@
     // === CREATURE SPRITE HELPER ===
     function getCreatureDisplay(creature, sizeClass) {
         const cls = sizeClass || 'creature-sprite';
-        if (creature.spriteSheet && creature.spritePos !== undefined) {
-            const col = creature.spritePos % 3;
-            const row = Math.floor(creature.spritePos / 3);
-            const bgX = col * 50;  // 0%, 50%, 100%
-            const bgY = row * 100; // 0%, 100%
-            return `<div class="${cls}" style="background-image: url('assets/creatures/${creature.spriteSheet}'); background-position: ${bgX}% ${bgY}%;"></div>`;
+        // Use individual creature PNG by ID
+        if (creature.id) {
+            return `<img class="${cls}" src="assets/creatures/${creature.id}.png" alt="${creature.name || creature.id}" onerror="this.outerHTML='<span style=\\'font-size:3rem\\'>${creature.emoji || '?'}</span>'">`;
         }
         const fontSize = cls === 'creature-sprite-sm' ? '1.5rem' : cls === 'creature-sprite-lg' ? '3.5rem' : '2.5rem';
         return `<span style="font-size:${fontSize}">${creature.emoji}</span>`;

@@ -784,28 +784,22 @@ html, body {
 .creature-sprite {
     width: 80px;
     height: 80px;
-    background-size: 300% 200%; /* 3 cols x 2 rows */
-    background-repeat: no-repeat;
+    object-fit: contain;
     border-radius: 12px;
-    image-rendering: auto;
     display: inline-block;
 }
 .creature-sprite-sm {
     width: 48px;
     height: 48px;
-    background-size: 300% 200%;
-    background-repeat: no-repeat;
+    object-fit: contain;
     border-radius: 8px;
-    image-rendering: auto;
     display: inline-block;
 }
 .creature-sprite-lg {
-    width: 100px;
-    height: 100px;
-    background-size: 300% 200%;
-    background-repeat: no-repeat;
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
     border-radius: 14px;
-    image-rendering: auto;
     display: inline-block;
 }
 

@@ -110,6 +110,8 @@ const CloudTTS = (() => {
             };
             _speaking = true;
             _currentSource = source;
+            // Resume context first — browsers (Chrome, Silk, Safari) suspend AudioContext
+            // aggressively and source.start() silently fails if context is still suspended.
             c.resume().then(() => source.start(0)).catch(() => {
                 _speaking = false;
                 _currentSource = null;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'think-fast-v96';
+const CACHE_NAME = 'think-fast-v99';
 const ASSETS = [
     '/',
     '/index.html',
@@ -11,6 +11,7 @@ const ASSETS = [
     '/js/otb-config.js',
     '/js/ecosystem.js',
     '/js/cloud-tts.js',
+    '/js/offline.js',
     '/js/main.js',
     '/js/game-renderer.js',
     '/js/game.js',
@@ -29,6 +30,10 @@ const ASSETS = [
     '/js/settings.js',
     '/js/tutorial.js',
     '/js/story.js',
+    // V44: New infra modules
+    '/js/error-boundary.js',
+    '/js/analytics.js',
+    '/js/variable-reward.js',
     '/assets/sounds/sfx/click.mp3',
     '/assets/sounds/sfx/correct.mp3',
     '/assets/sounds/sfx/wrong.mp3',
@@ -121,8 +126,25 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     // Only handle same-origin GET requests
     if (event.request.method !== 'GET') return;
-if (event.request.url.includes('version.json') || event.request.url.includes('auto-update.js')) return;
+    if (event.request.url.includes('version.json') || event.request.url.includes('auto-update.js')) return;
 
+    const url = new URL(event.request.url);
+    // V44: Stale-while-revalidate for on-demand TTS audio (huge bank, fetched lazily)
+    if (url.pathname.startsWith('/assets/sounds/tts/')) {
+        event.respondWith(
+            caches.open(CACHE_NAME).then(async (cache) => {
+                const cached = await cache.match(event.request);
+                const networkFetch = fetch(event.request).then((resp) => {
+                    if (resp && resp.ok) cache.put(event.request, resp.clone()).catch(() => {});
+                    return resp;
+                }).catch(() => cached);
+                return cached || networkFetch;
+            })
+        );
+        return;
+    }
+
+    // Cache-first for the rest of the app shell
     event.respondWith(
         caches.match(event.request).then((cached) => {
             if (cached) return cached;

@@ -10,8 +10,11 @@
     <link rel="icon" type="image/png" href="assets/bbg-logo.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/shared/design-system.css?v=2">
-    <link rel="stylesheet" href="css/hub.css?v=7">
-    <link rel="stylesheet" href="css/hub-features.css?v=2">
+    <link rel="stylesheet" href="css/hub.css?v=8">
+    <link rel="stylesheet" href="css/hub-features.css?v=3">
+    <link rel="stylesheet" href="css/dashboard.css?v=2">
+    <script src="js/error-boundary.js"></script>
+    <script src="js/analytics.js"></script>
 </head>
 <body>
     <!-- Splash Screen -->
@@ -51,8 +54,8 @@
             <img src="assets/bbg-logo.png" alt="BBG" class="profile-select-logo">
             <h1 class="profile-select-title">Who's Playing?</h1>
         </div>
-        <div class="profile-cards" id="profile-cards"></div>
-        <button class="otb-btn otb-btn-small profile-add-btn" id="add-profile-btn">+ Add Player</button>
+        <div class="profile-cards" id="profile-cards" role="list" aria-label="Player profiles"></div>
+        <button class="otb-btn otb-btn-small profile-add-btn" id="add-profile-btn" aria-label="Add a new player profile">+ Add Player</button>
     </div>
 
     <!-- Add Player Modal -->
@@ -86,15 +89,15 @@
             </div>
             <div class="hub-player">
                 <div class="hub-player-info">
-                    <div class="hub-avatar" id="player-avatar">😎</div>
+                    <div class="hub-avatar" id="player-avatar" aria-hidden="true">😎</div>
                     <div>
                         <span class="hub-player-name" id="player-name">Player</span>
-                        <span class="hub-player-level" id="player-level">Lv. 1</span>
-                        <button class="hub-profile-switch" id="switch-profile-btn" title="Switch player">Switch</button>
+                        <span class="hub-player-level" id="player-level" aria-label="Current level">Lv. 1</span>
+                        <button class="hub-profile-switch" id="switch-profile-btn" title="Switch player" aria-label="Switch to a different player profile">Switch</button>
                         <div class="hub-player-title" id="player-title"></div>
                     </div>
                 </div>
-                <div class="hub-xp-bar">
+                <div class="hub-xp-bar" role="progressbar" aria-label="Experience progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                     <div class="hub-xp-fill" id="xp-fill" style="width: 0%"></div>
                 </div>
                 <div class="hub-stats-row" aria-live="polite">
@@ -114,6 +117,8 @@
 
         <!-- Tab: Home (Games + Challenges) -->
         <div class="hub-tab-content active" id="tab-home" role="tabpanel" aria-labelledby="tab-home">
+            <!-- Dashboard panel: greeting + level + suggested next + recent mastery -->
+            <section class="hub-section hub-section-dashboard" id="dashboard-panel" aria-label="Dashboard"></section>
             <!-- Games Grid (hero element — first thing kids see) -->
             <section class="hub-section hub-section-games">
                 <h2 class="hub-section-title">My Games</h2>
@@ -275,66 +280,7 @@
     <script src="js/reportcard.js"></script>
     <script src="js/pet.js"></script>
     <script src="js/hub.js"></script>
-    <script>
-        // Service Worker
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-
-        // PWA Install Prompt — supports Chrome (beforeinstallprompt) + Silk/other browsers (manual)
-        let deferredPrompt;
-        const installBanner = document.getElementById('install-banner');
-        const installBtn = document.getElementById('install-btn');
-        const installText = document.getElementById('install-text');
-        const dismissed = sessionStorage.getItem('bbg_install_dismissed');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            if (!dismissed && !window.matchMedia('(display-mode: standalone)').matches) {
-                installBanner.style.display = 'flex';
-            }
-        });
-
-        // Fallback for browsers without beforeinstallprompt (Amazon Silk, Firefox, Safari)
-        window.addEventListener('load', () => {
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-            if (isStandalone || dismissed) return;
-            // If beforeinstallprompt didn't fire within 2s, show manual instructions
-            setTimeout(() => {
-                if (!deferredPrompt && installBanner.style.display === 'none') {
-                    const ua = navigator.userAgent.toLowerCase();
-                    if (ua.includes('silk')) {
-                        installText.textContent = '📲 Tap the menu (⋮) then "Add to Home Screen" for full-screen play!';
-                        installBtn.textContent = 'Got it';
-                        installBtn.onclick = () => { installBanner.style.display = 'none'; sessionStorage.setItem('bbg_install_dismissed', '1'); };
-                    } else if (ua.includes('firefox')) {
-                        installText.textContent = '📲 Tap the menu (⋮) then "Install" for full-screen play!';
-                        installBtn.textContent = 'Got it';
-                        installBtn.onclick = () => { installBanner.style.display = 'none'; sessionStorage.setItem('bbg_install_dismissed', '1'); };
-                    } else if (ua.includes('safari') && !ua.includes('chrome')) {
-                        installText.textContent = '📲 Tap Share then "Add to Home Screen" for full-screen play!';
-                        installBtn.textContent = 'Got it';
-                        installBtn.onclick = () => { installBanner.style.display = 'none'; sessionStorage.setItem('bbg_install_dismissed', '1'); };
-                    } else {
-                        return; // Unknown browser, don't show
-                    }
-                    installBanner.style.display = 'flex';
-                }
-            }, 2000);
-        });
-
-        installBtn?.addEventListener('click', () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(() => {
-                    deferredPrompt = null;
-                    installBanner.style.display = 'none';
-                });
-            }
-        });
-        document.getElementById('install-dismiss')?.addEventListener('click', () => {
-            installBanner.style.display = 'none';
-            sessionStorage.setItem('bbg_install_dismissed', '1');
-        });
-    </script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/install-prompt.js"></script>
 </body>
 </html>

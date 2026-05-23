@@ -75,6 +75,14 @@ const ShapeBuilder = (() => {
     let questionType = 'match';
     let currentAnswer = null;
 
+    function _wireGeneric(prompt) {
+        Main.attachVoiceReplay(container, prompt);
+        HintCascade.start({
+            getCorrectEl: () => container.querySelector(`[data-answer="${currentAnswer}"]`),
+            prompt: prompt
+        });
+    }
+
     function start(containerEl, callback) {
         container = containerEl;
         onComplete = callback;
@@ -143,13 +151,23 @@ const ShapeBuilder = (() => {
             </div>
         `;
         container.querySelectorAll('.shape-choice-btn').forEach(btn => btn.addEventListener('click', () => _onShapeChoice(btn)));
-        setTimeout(() => Voice.speak(`Spidey needs the ${targetShape.name}!`), 300);
+        const shapePrompt = `Spidey needs the ${targetShape.name}!`;
+        Main.attachVoiceReplay(container, shapePrompt);
+        HintCascade.start({
+            getCorrectEl: () => container.querySelector(`[data-shape="${targetShape.name}"]`),
+            prompt: shapePrompt
+        });
+        setTimeout(() => Voice.speak(shapePrompt), 300);
     }
 
     function _onShapeChoice(btn) {
+        HintCascade.tap();
         const chosen = btn.dataset.shape;
         roundTotal++;
         if (chosen === targetShape.name) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('shape-builder', true);
@@ -162,12 +180,12 @@ const ShapeBuilder = (() => {
             setTimeout(_nextQuestion, 1200);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('shape-builder', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
             const correctBtn = container.querySelector(`[data-shape="${targetShape.name}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
-            Voice.speak(`That's the ${chosen}. Look for the ${targetShape.name}!`);
             setTimeout(() => { btn.classList.remove('choice-wrong'); if (correctBtn) correctBtn.classList.remove('choice-hint'); }, 2000);
         }
     }
@@ -197,7 +215,9 @@ const ShapeBuilder = (() => {
             </div>
         `;
         container.querySelectorAll('.shape-choice-btn').forEach(btn => btn.addEventListener('click', () => _onGenericChoice(btn)));
-        setTimeout(() => Voice.speak(`What 3D shape looks like a ${shape.desc}?`), 400);
+        const p = `What 3D shape looks like a ${shape.desc}?`;
+        _wireGeneric(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- K: Count Sides/Corners ----------
@@ -226,7 +246,9 @@ const ShapeBuilder = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onGenericChoice(btn)));
-        setTimeout(() => Voice.speak(`How many ${askLabel} does a ${shape.name} have?`), 400);
+        const p = `How many ${askLabel} does a ${shape.name} have?`;
+        _wireGeneric(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 1st Grade: Symmetry ----------
@@ -250,7 +272,9 @@ const ShapeBuilder = (() => {
             </div>
         `;
         container.querySelectorAll('.warmcool-btn').forEach(btn => btn.addEventListener('click', () => _onGenericChoice(btn)));
-        setTimeout(() => Voice.speak(`Is the ${shape.name} symmetrical? Is it the same on both sides?`), 400);
+        const p = `Is the ${shape.name} symmetrical? Is it the same on both sides?`;
+        _wireGeneric(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 1st Grade: Equal Parts / Fractions ----------
@@ -272,7 +296,9 @@ const ShapeBuilder = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onGenericChoice(btn)));
-        setTimeout(() => Voice.speak(`How many equal parts is this ${frac.shape} split into?`), 400);
+        const p = `How many equal parts is this ${frac.shape} split into?`;
+        _wireGeneric(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 2nd Grade: Area ----------
@@ -312,7 +338,9 @@ const ShapeBuilder = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onGenericChoice(btn)));
-        setTimeout(() => Voice.speak(`What is the area? Count all the unit squares!`), 400);
+        const p = `What is the area? Count all the unit squares!`;
+        _wireGeneric(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 2nd Grade: Perimeter ----------
@@ -342,7 +370,9 @@ const ShapeBuilder = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onGenericChoice(btn)));
-        setTimeout(() => Voice.speak(`What is the perimeter? Add up all the sides: ${prob.width} plus ${prob.height} plus ${prob.width} plus ${prob.height}.`), 400);
+        const p = `What is the perimeter? Add up all the sides: ${prob.width} plus ${prob.height} plus ${prob.width} plus ${prob.height}.`;
+        _wireGeneric(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 2nd Grade: Angles ----------
@@ -371,14 +401,20 @@ const ShapeBuilder = (() => {
             </div>
         `;
         container.querySelectorAll('.shape-choice-btn').forEach(btn => btn.addEventListener('click', () => _onGenericChoice(btn)));
-        setTimeout(() => Voice.speak('What kind of angle is this?'), 400);
+        const p = 'What kind of angle is this?';
+        _wireGeneric(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- Generic choice handler ----------
     function _onGenericChoice(btn) {
+        HintCascade.tap();
         const chosen = btn.dataset.answer;
         roundTotal++;
         if (chosen === currentAnswer) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('shape-builder', true);
@@ -392,12 +428,12 @@ const ShapeBuilder = (() => {
             setTimeout(_nextQuestion, 1200);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('shape-builder', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
             const correctBtn = container.querySelector(`[data-answer="${currentAnswer}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
-            Voice.speak(`Not quite. The answer is ${currentAnswer}!`);
             setTimeout(() => { btn.classList.remove('choice-wrong'); if (correctBtn) correctBtn.classList.remove('choice-hint'); }, 2000);
         }
     }
@@ -441,6 +477,6 @@ const ShapeBuilder = (() => {
         Main.showStickerEarned(sticker);
     }
 
-    function stop() { currentRound = totalRounds; }
+    function stop() { currentRound = totalRounds; try { HintCascade.stop(); } catch (e) {} }
     return { start, stop };
 })();

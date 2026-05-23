@@ -123,7 +123,19 @@ const Progress = (() => {
             if (data.lastPlayDate === yesterdayStr) {
                 data.streak++;
             } else if (data.lastPlayDate) {
-                data.streak = 1; // Streak broken
+                // 36-hour grace period: if lastPlayDate was within 36 hours,
+                // keep the streak (kid skipped one bedtime, not the whole day).
+                try {
+                    const lastMs = new Date(data.lastPlayDate + 'T12:00:00').getTime();
+                    const hoursSince = (Date.now() - lastMs) / (60 * 60 * 1000);
+                    if (hoursSince < 48) {
+                        // graceful pass-through — streak preserved
+                    } else {
+                        data.streak = 1;
+                    }
+                } catch (_) {
+                    data.streak = 1;
+                }
             } else {
                 data.streak = 1; // First ever play
             }
@@ -138,6 +150,11 @@ const Progress = (() => {
         data.totalAttempts++;
         const stats = data.activityStats[activityId];
         if (stats) stats.attempts++;
+        try {
+            if (typeof Analytics !== 'undefined') {
+                Analytics.event(correct ? 'answer_correct' : 'answer_wrong', { activity: activityId });
+            }
+        } catch (_) {}
 
         if (correct) {
             data.totalCorrect++;

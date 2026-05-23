@@ -271,11 +271,21 @@ const Audio = {
         if (!text || !text.trim()) return Promise.resolve();
 
         // V42: Use Google Cloud TTS (works on Silk tablets)
+        // V44: Always restore music volume even if TTS rejects/throws
         if (typeof CloudTTS !== 'undefined') {
             this._duckMusic(true);
-            return CloudTTS.speakFemale(text, {
-                onEnd: () => this._duckMusic(false)
-            });
+            const restore = () => this._duckMusic(false);
+            // Safety fallback: never let music stay ducked > 12s if onEnd never fires
+            const safety = setTimeout(restore, 12000);
+            const wrapEnd = () => { clearTimeout(safety); restore(); };
+            try {
+                const p = CloudTTS.speakFemale(text, { onEnd: wrapEnd });
+                if (p && typeof p.catch === 'function') p.catch(wrapEnd);
+                return p || Promise.resolve();
+            } catch (e) {
+                wrapEnd();
+                return Promise.resolve();
+            }
         }
 
         // Legacy: Try pre-generated TTS then speechSynthesis

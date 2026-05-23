@@ -121,6 +121,14 @@ const LetterWeb = (() => {
     let questionType = 'letter'; // 'letter', 'cvc', 'blend', 'sight', 'vowelteam', 'rcontrolled', 'syllable'
     let currentAnswer = null;
 
+    function _wireGen(prompt) {
+        Main.attachVoiceReplay(container, prompt);
+        HintCascade.start({
+            getCorrectEl: () => container.querySelector(`[data-answer="${currentAnswer}"]`),
+            prompt: prompt
+        });
+    }
+
     function start(containerEl, callback) {
         container = containerEl;
         onComplete = callback;
@@ -197,22 +205,31 @@ const LetterWeb = (() => {
         `;
         container.querySelectorAll('.letter-choice-btn').forEach(btn => btn.addEventListener('click', () => _onLetterChoice(btn)));
 
-        setTimeout(() => {
-            if (useSoundHint) {
-                const sound = LETTER_SOUNDS[targetLetter] || targetLetter;
-                Voice.speak(`Find the letter that says "${sound}"!`);
-            } else if (useLowercase) {
-                Voice.speak(`Find the lowercase ${targetLetter}!`);
-            } else {
-                Voice.speak(`Find the letter ${targetLetter}!`);
-            }
-        }, 400);
+        let p;
+        if (useSoundHint) {
+            const sound = LETTER_SOUNDS[targetLetter] || targetLetter;
+            p = `Find the letter that says "${sound}"!`;
+        } else if (useLowercase) {
+            p = `Find the lowercase ${targetLetter}!`;
+        } else {
+            p = `Find the letter ${targetLetter}!`;
+        }
+        Main.attachVoiceReplay(container, p);
+        HintCascade.start({
+            getCorrectEl: () => container.querySelector(`[data-letter="${targetLetter}"]`),
+            prompt: p
+        });
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     function _onLetterChoice(btn) {
+        HintCascade.tap();
         const chosen = btn.dataset.letter;
         roundTotal++;
         if (chosen === targetLetter) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('letter-web', true);
@@ -227,12 +244,12 @@ const LetterWeb = (() => {
             setTimeout(_nextQuestion, 1500);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('letter-web', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
             const correctBtn = container.querySelector(`[data-letter="${targetLetter}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
-            Voice.speak(`That's ${chosen}. Look for ${targetLetter}!`);
             setTimeout(() => { btn.classList.remove('choice-wrong'); if (correctBtn) correctBtn.classList.remove('choice-hint'); }, 2500);
         }
     }
@@ -260,7 +277,9 @@ const LetterWeb = (() => {
             </div>
         `;
         container.querySelectorAll('.letter-choice-btn').forEach(btn => btn.addEventListener('click', () => _onGenericChoice(btn)));
-        setTimeout(() => Voice.speak(`What letter does ${word.word} start with?`), 400);
+        const p = `What letter does ${word.word} start with?`;
+        _wireGen(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 1st Grade: Blends & Digraphs ----------
@@ -284,7 +303,9 @@ const LetterWeb = (() => {
             </div>
         `;
         container.querySelectorAll('.letter-choice-btn').forEach(btn => btn.addEventListener('click', () => _onGenericChoice(btn)));
-        setTimeout(() => Voice.speak(`What ${item.type} does ${item.word} start with?`), 400);
+        const p = `What ${item.type} does ${item.word} start with?`;
+        _wireGen(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 1st Grade: Sight Words ----------
@@ -314,13 +335,19 @@ const LetterWeb = (() => {
             </div>
         `;
         container.querySelectorAll('.letter-choice-btn').forEach(btn => btn.addEventListener('click', () => _onSightChoice(btn, word)));
-        setTimeout(() => Voice.speak(`What letter is missing from ${displayed.replace('_', 'blank')}?`), 400);
+        const p = `What letter is missing from ${displayed.replace('_', 'blank')}?`;
+        _wireGen(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     function _onSightChoice(btn, fullWord) {
+        HintCascade.tap();
         const chosen = btn.dataset.answer;
         roundTotal++;
         if (chosen === currentAnswer) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('letter-web', true);
@@ -334,12 +361,12 @@ const LetterWeb = (() => {
             setTimeout(_nextQuestion, 1500);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('letter-web', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
             const correctBtn = container.querySelector(`[data-answer="${currentAnswer}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
-            Voice.speak(`Not quite. The missing letter is ${currentAnswer}. The word is ${fullWord}.`);
             setTimeout(() => { btn.classList.remove('choice-wrong'); if (correctBtn) correctBtn.classList.remove('choice-hint'); }, 2500);
         }
     }
@@ -369,7 +396,9 @@ const LetterWeb = (() => {
             </div>
         `;
         container.querySelectorAll('.letter-choice-btn').forEach(btn => btn.addEventListener('click', () => _onGenericChoice(btn)));
-        setTimeout(() => Voice.speak(`Look at the word ${item.word}. Which vowel team do you see?`), 400);
+        const p = `Look at the word ${item.word}. Which vowel team do you see?`;
+        _wireGen(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 2nd Grade: R-Controlled Vowels ----------
@@ -395,7 +424,9 @@ const LetterWeb = (() => {
             </div>
         `;
         container.querySelectorAll('.letter-choice-btn').forEach(btn => btn.addEventListener('click', () => _onGenericChoice(btn)));
-        setTimeout(() => Voice.speak(`Which bossy R pattern is in the word ${item.word}?`), 400);
+        const p = `Which bossy R pattern is in the word ${item.word}?`;
+        _wireGen(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 2nd Grade: Syllable Counting ----------
@@ -421,13 +452,19 @@ const LetterWeb = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onSyllableChoice(btn, item)));
-        setTimeout(() => Voice.speak(`How many syllables in the word ${item.word}? Clap it out!`), 400);
+        const p = `How many syllables in the word ${item.word}? Clap it out!`;
+        _wireGen(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     function _onSyllableChoice(btn, item) {
+        HintCascade.tap();
         const chosen = btn.dataset.answer;
         roundTotal++;
         if (chosen === currentAnswer) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('letter-web', true);
@@ -441,21 +478,25 @@ const LetterWeb = (() => {
             setTimeout(_nextQuestion, 2000);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('letter-web', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
             const correctBtn = container.querySelector(`[data-answer="${currentAnswer}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
-            Voice.speak(`Let's clap it: ${item.syllables.join(', ')}. ${item.count} syllables!`);
             setTimeout(() => { btn.classList.remove('choice-wrong'); if (correctBtn) correctBtn.classList.remove('choice-hint'); }, 3000);
         }
     }
 
     // ---------- Generic choice handler (blend, cvc, vowel team, r-controlled) ----------
     function _onGenericChoice(btn) {
+        HintCascade.tap();
         const chosen = btn.dataset.answer;
         roundTotal++;
         if (chosen === currentAnswer) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('letter-web', true);
@@ -469,12 +510,12 @@ const LetterWeb = (() => {
             setTimeout(_nextQuestion, 1500);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('letter-web', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
             const correctBtn = container.querySelector(`[data-answer="${currentAnswer}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
-            Voice.speak(`Not quite. The answer is ${currentAnswer}!`);
             setTimeout(() => { btn.classList.remove('choice-wrong'); if (correctBtn) correctBtn.classList.remove('choice-hint'); }, 2500);
         }
     }
@@ -502,6 +543,6 @@ const LetterWeb = (() => {
         Main.showStickerEarned(sticker);
     }
 
-    function stop() { currentRound = totalRounds; }
+    function stop() { currentRound = totalRounds; try { HintCascade.stop(); } catch (e) {} }
     return { start, stop };
 })();

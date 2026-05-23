@@ -103,10 +103,10 @@
             <button class="activity-pause-btn" id="btn-activity-pause" aria-label="Pause" style="position:absolute;top:8px;right:8px;z-index:20;">⏸</button>
             <div id="activity-container"></div>
             <div class="pause-overlay" id="activity-pause-overlay">
-                <div class="pause-box">
-                    <h2>⏸ Paused</h2>
-                    <button class="big-btn btn-play" id="btn-activity-resume">▶ Resume</button>
-                    <button class="big-btn" id="btn-activity-quit" style="background:rgba(255,255,255,0.15);font-size:0.9rem;">🏠 Back to Games</button>
+                <div class="pause-box" role="dialog" aria-labelledby="pause-title">
+                    <h2 id="pause-title">⏸ Paused</h2>
+                    <button class="big-btn btn-play" id="btn-activity-resume" aria-label="Resume the game">▶ Resume</button>
+                    <button class="big-btn" id="btn-activity-quit" style="background:rgba(255,255,255,0.15);font-size:0.9rem;" aria-label="Quit and go back to games">🏠 Back to Games</button>
                 </div>
             </div>
         </div>
@@ -162,26 +162,33 @@
     </div>
 
     <!-- PWA Install Banner -->
-    <div id="pwa-install-banner" style="display:none;position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#e23636,#ff5252);padding:8px 16px;z-index:9999;align-items:center;justify-content:center;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,0.4);">
+    <div id="pwa-install-banner" role="region" aria-label="Install app" style="display:none;position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#e23636,#ff5252);padding:8px 16px;z-index:9999;align-items:center;justify-content:center;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,0.4);">
         <span style="font-family:var(--otb-font-body,Nunito,sans-serif);color:#fff;font-size:0.9rem;font-weight:600;">📲 Install for full-screen play!</span>
-        <button style="background:#fff;color:#e23636;border:none;border-radius:8px;padding:6px 16px;font-weight:700;cursor:pointer;font-size:0.85rem;">Install</button>
-        <button style="background:none;border:none;color:rgba(255,255,255,0.8);cursor:pointer;font-size:1.1rem;padding:2px 6px;">✕</button>
+        <button aria-label="Install Spidey Academy" style="background:#fff;color:#e23636;border:none;border-radius:8px;padding:6px 16px;font-weight:700;cursor:pointer;font-size:0.85rem;">Install</button>
+        <button aria-label="Dismiss install banner" style="background:none;border:none;color:rgba(255,255,255,0.8);cursor:pointer;font-size:1.1rem;padding:2px 6px;">✕</button>
     </div>
 
     <!-- Scripts -->
+    <script src="js/error-boundary.js"></script>
+    <script src="js/analytics.js"></script>
     <script src="js/otb-config.js"></script>
     <script src="js/auto-update.js"></script>
     <script src="js/cloud-tts.js"></script>
     <script src="js/ecosystem.js"></script>
     <script src="js/voice.js"></script>
     <script src="js/audio.js"></script>
+    <script src="js/audio-enhancer.js"></script>
+    <script src="js/encouragement.js"></script>
+    <script src="js/hint-cascade.js"></script>
     <script src="js/progress.js"></script>
+    <script src="js/streak-ui.js"></script>
     <script src="js/celebration.js"></script>
     <script src="js/character.js"></script>
     <script src="js/backgrounds.js"></script>
     <script src="js/badges.js"></script>
     <script src="js/achievements.js"></script>
     <script src="js/sticker-book.js"></script>
+    <script src="js/mystery-egg.js"></script>
     <script src="js/activities/color-catch.js"></script>
     <script src="js/activities/shape-builder.js"></script>
     <script src="js/activities/number-bugs.js"></script>

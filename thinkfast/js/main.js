@@ -936,6 +936,29 @@ const Main = {
         this.lastRaceResults = results;
         this._showScreen('results');
 
+        // V44: Analytics — session_end-style summary + levelUp event
+        try {
+            if (typeof Analytics !== 'undefined') {
+                Analytics.event('race_complete', {
+                    subject: results.subject || null,
+                    topic: results.topic || null,
+                    stars: results.stars | 0,
+                    correct: results.correct | 0,
+                    total: results.total | 0,
+                    accuracy: results.accuracy || 0,
+                    streak: results.streak | 0,
+                    mode: results.gameMode || 'standard'
+                });
+                if (results.levelUp && results.levelUp.leveledUp) {
+                    Analytics.levelUp({
+                        newLevel: results.levelUp.newLevel,
+                        newRank: results.levelUp.newRank || null,
+                        rankChanged: !!results.levelUp.rankChanged
+                    });
+                }
+            }
+        } catch (_) {}
+
         // Podium celebration
         this._renderPodium(results.standings);
 

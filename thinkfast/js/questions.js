@@ -60,6 +60,17 @@ const Questions = {
         }
 
         this.currentQuestion = data;
+        this._shownAt = Date.now();
+        // V44: Round-start analytics
+        try {
+            if (typeof Analytics !== 'undefined') {
+                Analytics.roundStart({
+                    subject: subject, topic: topic,
+                    subtype: data && data.subtype,
+                    level: params && params.level
+                });
+            }
+        } catch (_) {}
         this._render(data);
     },
 
@@ -172,6 +183,47 @@ const Questions = {
         if (this._answered) return;
         this._answered = true;
 
+        const correct = index === this.currentQuestion.correctIndex;
+
+        // V44: Response time + analytics
+        const responseMs = this._shownAt ? Date.now() - this._shownAt : null;
+        try {
+            if (typeof Analytics !== 'undefined') {
+                Analytics.answer(correct, {
+                    subject: this.currentSubject,
+                    topic: this.currentTopic,
+                    subtype: this.currentQuestion && this.currentQuestion.subtype,
+                    level: (typeof Adaptive !== 'undefined' && Adaptive.getLevel)
+                        ? Adaptive.getLevel(this.currentSubject, this.currentTopic) : null,
+                    rtMs: responseMs,
+                    streak: (typeof Game !== 'undefined' && Game.streak) || 0
+                });
+            }
+        } catch (_) {}
+
+        // Fire/Silk: Sub-100ms tap confirmation — audio chime + classList change
+        // happen BEFORE the all-buttons disable loop so the kid hears/sees feedback
+        // within the same frame as their tap (AudioContext source.start(0) is < 10ms).
+        if (correct) {
+            btn.classList.add('correct');
+            Audio.playCorrect(Game.streak);
+            this._spawnPlusOne(btn);
+
+            // V44: Variable reward roll (mystery box on a variable-ratio schedule)
+            try {
+                if (typeof VariableReward !== 'undefined') {
+                    const drop = VariableReward.rollOnCorrect((Game && Game.streak) || 0);
+                    if (drop) {
+                        // Defer banner slightly so the +1 pop reads first
+                        setTimeout(() => VariableReward.showRewardBanner(drop), 350);
+                    }
+                }
+            } catch (_) {}
+        } else {
+            btn.classList.add('wrong');
+            Audio.playWrong();
+        }
+
         // Disable all buttons visually after answer
         const allBtns = document.querySelectorAll('.answer-btn');
         allBtns.forEach(b => {
@@ -179,11 +231,7 @@ const Questions = {
             b.style.pointerEvents = 'none';
         });
 
-        const correct = index === this.currentQuestion.correctIndex;
-
         if (correct) {
-            btn.classList.add('correct');
-            Audio.playCorrect(Game.streak);
             const phrase = Audio.encourageCorrect();
             this._showFeedback(phrase, true);
             this._spawnParticleBurst(btn);
@@ -193,9 +241,9 @@ const Questions = {
                 this._showExplanation(true);
             }
         } else {
-            btn.classList.add('wrong');
             allBtns[this.currentQuestion.correctIndex].classList.add('correct');
-            Audio.playWrong();
+            // Fire/Silk: brief rotating encouragement on wrong answer (TTS)
+            this._speakWrongEncouragement();
 
             // Show explanation for wrong answers
             this._showExplanation(false);
@@ -244,9 +292,10 @@ const Questions = {
                 }, 1500);
             }
         } else if (!wasCorrect) {
-            // Fallback: just encourage
-            const phrase = Audio.encourageWrong();
-            this._showFeedback(phrase, false);
+            // Fire/Silk: encouragement already spoken by _speakWrongEncouragement().
+            // Show a brief on-screen phrase for visual reinforcement.
+            const i = (this._wrongPhraseIdx + this._wrongPhrases.length - 1) % this._wrongPhrases.length;
+            this._showFeedback(this._wrongPhrases[i], false);
         }
     },
 
@@ -259,6 +308,56 @@ const Questions = {
         feedback.offsetHeight;
         feedback.style.animation = 'feedback-pop 0.8s forwards';
         setTimeout(() => { feedback.style.display = 'none'; }, 800);
+    },
+
+    // Fire/Silk: Floating "+1" pop above the tapped correct answer for instant feedback
+    _spawnPlusOne(btn) {
+        try {
+            if (Settings && Settings.prefersReducedMotion) return;
+            const rect = btn.getBoundingClientRect();
+            const el = document.createElement('div');
+            el.className = 'answer-plus-one';
+            el.textContent = '+1';
+            el.style.cssText = `
+                position:fixed; left:${rect.left + rect.width / 2}px; top:${rect.top}px;
+                transform: translate(-50%, -50%);
+                font-family: var(--otb-font-heading, 'Fredoka One', sans-serif);
+                font-size: 2rem; font-weight: 700; color: #2ecc71;
+                text-shadow: 0 0 10px rgba(46,204,113,0.6), 0 2px 4px rgba(0,0,0,0.5);
+                pointer-events: none; z-index: 10000;
+            `;
+            document.body.appendChild(el);
+            el.animate([
+                { transform: 'translate(-50%, -50%) scale(0.6)', opacity: 0 },
+                { transform: 'translate(-50%, -130%) scale(1.3)', opacity: 1, offset: 0.3 },
+                { transform: 'translate(-50%, -220%) scale(1)', opacity: 0 }
+            ], { duration: 900, easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)', fill: 'forwards' })
+                .onfinish = () => el.remove();
+        } catch (_) { /* SES or older browsers: silent */ }
+    },
+
+    // Fire/Silk: rotating positive encouragement on wrong answer
+    _wrongPhrases: [
+        'Try again!',
+        'You can do it!',
+        'Keep going!',
+        'Almost!',
+        'Don\'t give up!'
+    ],
+    _wrongPhraseIdx: 0,
+    _speakWrongEncouragement() {
+        try {
+            if (!Settings || Settings.get('voice') === false) return;
+            const i = this._wrongPhraseIdx % this._wrongPhrases.length;
+            this._wrongPhraseIdx = (this._wrongPhraseIdx + 1) % this._wrongPhrases.length;
+            const phrase = this._wrongPhrases[i];
+            // Tiny delay so the wrong-chime plays first without overlap
+            setTimeout(() => {
+                if (typeof Audio !== 'undefined' && Audio.speak) {
+                    Audio.speak(phrase, { context: 'gentle' });
+                }
+            }, 250);
+        } catch (_) { /* silent */ }
     },
 
     // V14: Sparkle particle burst from correct answer button

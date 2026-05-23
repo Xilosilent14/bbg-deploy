@@ -2,11 +2,12 @@
     "name": "Think Fast — The Michigan Road Race",
     "short_name": "Think Fast",
     "description": "Race cars while learning math and reading!",
-    "start_url": "./",
+    "start_url": ".",
+    "scope": ".",
     "display": "standalone",
     "orientation": "landscape",
     "background_color": "#1a1a2e",
-    "theme_color": "#1a1a2e",
+    "theme_color": "#e94560",
     "icons": [
         {
             "src": "icons/icon-192.png",

@@ -15,6 +15,14 @@ const NumberBugs = (() => {
     let questionType = 'count';
     let questionData = null;
 
+    function _wireNum(prompt) {
+        Main.attachVoiceReplay(container, prompt);
+        HintCascade.start({
+            getCorrectEl: () => container.querySelector(`[data-number="${correctAnswer}"]`),
+            prompt: prompt
+        });
+    }
+
     function start(containerEl, callback) {
         container = containerEl;
         onComplete = callback;
@@ -89,7 +97,9 @@ const NumberBugs = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onChoice(btn)));
-        setTimeout(() => Voice.speak('How many bugs do you see?'), 400);
+        const p = 'How many bugs do you see?';
+        _wireNum(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     function _renderHowManyMore() {
@@ -112,7 +122,9 @@ const NumberBugs = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onChoice(btn)));
-        setTimeout(() => Voice.speak(`You have ${shownCount} bugs. How many more to make ${targetTotal}?`), 400);
+        const p = `You have ${shownCount} bugs. How many more to make ${targetTotal}?`;
+        _wireNum(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- K: Counting to 30 ----------
@@ -136,7 +148,9 @@ const NumberBugs = (() => {
                 </div>
             `;
             container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onChoice(btn)));
-            setTimeout(() => Voice.speak('How many bugs?'), 400);
+            const p = 'How many bugs?';
+            _wireNum(p);
+            setTimeout(() => Voice.speak(p), 400);
         } else {
             // Number after: "What number comes after X?"
             const num = 10 + Math.floor(Math.random() * 20); // 10-29
@@ -152,7 +166,9 @@ const NumberBugs = (() => {
                 </div>
             `;
             container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onChoice(btn)));
-            setTimeout(() => Voice.speak(`What number comes after ${num}?`), 400);
+            const p = `What number comes after ${num}?`;
+            _wireNum(p);
+            setTimeout(() => Voice.speak(p), 400);
         }
     }
 
@@ -182,7 +198,9 @@ const NumberBugs = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onChoice(btn)));
-        setTimeout(() => Voice.speak(`What is ${a} plus ${b}?`), 400);
+        const p = `What is ${a} plus ${b}?`;
+        _wireNum(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- K: Subtraction from 5 ----------
@@ -211,7 +229,9 @@ const NumberBugs = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onChoice(btn)));
-        setTimeout(() => Voice.speak(`What is ${total} minus ${sub}?`), 400);
+        const p = `What is ${total} minus ${sub}?`;
+        _wireNum(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 1st Grade: Addition to 20 ----------
@@ -231,7 +251,9 @@ const NumberBugs = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onChoice(btn)));
-        setTimeout(() => Voice.speak(`What is ${a} plus ${b}?`), 400);
+        const p = `What is ${a} plus ${b}?`;
+        _wireNum(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 1st Grade: Subtraction from 20 ----------
@@ -251,7 +273,9 @@ const NumberBugs = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onChoice(btn)));
-        setTimeout(() => Voice.speak(`What is ${total} minus ${sub}?`), 400);
+        const p = `What is ${total} minus ${sub}?`;
+        _wireNum(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 1st Grade: Place Value ----------
@@ -281,7 +305,9 @@ const NumberBugs = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onChoice(btn)));
-        setTimeout(() => Voice.speak(`How many ${askLabel} are in ${number}?`), 400);
+        const p = `How many ${askLabel} are in ${number}?`;
+        _wireNum(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 1st Grade: Skip Counting ----------
@@ -303,7 +329,9 @@ const NumberBugs = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onChoice(btn)));
-        setTimeout(() => Voice.speak(`Skip count by ${skipBy}s. ${sequence.join(', ')}... what comes next?`), 400);
+        const p = `Skip count by ${skipBy}s. ${sequence.join(', ')}... what comes next?`;
+        _wireNum(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 2nd Grade: 2-Digit Addition ----------
@@ -323,7 +351,9 @@ const NumberBugs = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onChoice(btn)));
-        setTimeout(() => Voice.speak(`What is ${a} plus ${b}?`), 400);
+        const p = `What is ${a} plus ${b}?`;
+        _wireNum(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 2nd Grade: 2-Digit Subtraction ----------
@@ -343,7 +373,9 @@ const NumberBugs = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onChoice(btn)));
-        setTimeout(() => Voice.speak(`What is ${a} minus ${b}?`), 400);
+        const p = `What is ${a} minus ${b}?`;
+        _wireNum(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 2nd Grade: Multiplication (Groups Of) ----------
@@ -370,7 +402,9 @@ const NumberBugs = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onChoice(btn)));
-        setTimeout(() => Voice.speak(`${groups} groups of ${perGroup}. How many in all?`), 400);
+        const p = `${groups} groups of ${perGroup}. How many in all?`;
+        _wireNum(p);
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     // ---------- 2nd Grade: Telling Time ----------
@@ -429,13 +463,23 @@ const NumberBugs = (() => {
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onTimeChoice(btn)));
 
         const spoken = minute === 0 ? `${hour} o'clock` : timeStr;
-        setTimeout(() => Voice.speak(`What time does the clock show?`), 400);
+        const p = `What time does the clock show?`;
+        Main.attachVoiceReplay(container, p);
+        HintCascade.start({
+            getCorrectEl: () => container.querySelector(`[data-time="${correctAnswer}"]`),
+            prompt: p
+        });
+        setTimeout(() => Voice.speak(p), 400);
     }
 
     function _onTimeChoice(btn) {
+        HintCascade.tap();
         const chosen = btn.dataset.time;
         roundTotal++;
         if (chosen === correctAnswer) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('number-bugs', true);
@@ -451,23 +495,25 @@ const NumberBugs = (() => {
             setTimeout(_nextQuestion, 1500);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('number-bugs', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
             const correctBtn = container.querySelector(`[data-time="${correctAnswer}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
-            const parts = correctAnswer.split(':');
-            const spokenTime = parts[1] === '00' ? `${parts[0]} o'clock` : correctAnswer;
-            Voice.speak(`Not quite. The clock shows ${spokenTime}.`);
             setTimeout(() => { btn.classList.remove('choice-wrong'); if (correctBtn) correctBtn.classList.remove('choice-hint'); }, 3000);
         }
     }
 
     // ---------- Generic number choice handler ----------
     function _onChoice(btn) {
+        HintCascade.tap();
         const chosen = parseInt(btn.dataset.number);
         roundTotal++;
         if (chosen === correctAnswer) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('number-bugs', true);
@@ -485,16 +531,12 @@ const NumberBugs = (() => {
             setTimeout(_nextQuestion, 1500);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('number-bugs', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
             const correctBtn = container.querySelector(`[data-number="${correctAnswer}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
-            if (isHowManyMore) {
-                Voice.speak(`Not quite. ${shownCount} needs ${correctAnswer} more to make ${targetTotal}.`);
-            } else {
-                Voice.speak(`The answer is ${correctAnswer}!`);
-            }
             setTimeout(() => { btn.classList.remove('choice-wrong'); if (correctBtn) correctBtn.classList.remove('choice-hint'); }, 3000);
         }
     }
@@ -553,6 +595,6 @@ const NumberBugs = (() => {
         Main.showStickerEarned(sticker);
     }
 
-    function stop() { currentRound = totalRounds; }
+    function stop() { currentRound = totalRounds; try { HintCascade.stop(); } catch (e) {} }
     return { start, stop };
 })();

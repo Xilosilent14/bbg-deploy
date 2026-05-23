@@ -1,4 +1,8 @@
 // ===== RACING GAME ENGINE V4 =====
+// Fire/Silk: cap devicePixelRatio at 1.5 so Fire HD/HD10 (DPR up to 2) doesn't
+// blow up the canvas backing store and tank FPS on Fire 7-class hardware.
+const DPR = Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 1.5);
+
 const Game = {
     canvas: null,
     ctx: null,
@@ -235,6 +239,10 @@ const Game = {
 
     _resize() {
         if (!this.canvas) return;
+        // Fire/Silk: backing store kept at CSS pixels (no implicit HiDPI scaling
+        // in this renderer). The DPR constant is defined at the top of the file
+        // and capped at 1.5 so any future HiDPI math here can't exceed it on
+        // Fire HD 10 (DPR ~2) and tank FPS. Today's renderer is DPR-agnostic.
         this.canvas.width = this.canvas.parentElement.offsetWidth;
         this.canvas.height = this.canvas.parentElement.offsetHeight;
         this.roadY = this.canvas.height * 0.55;
@@ -248,6 +256,18 @@ const Game = {
         this.trackIndex = trackIndex || Progress.data.currentTrack;
         this.gameMode = gameMode || 'standard';
         this.bossTier = bossTier || 1; // V34
+
+        // V44: Analytics game_start event
+        try {
+            if (typeof Analytics !== 'undefined') {
+                Analytics.gameStart({
+                    subject: subject, topic: topic,
+                    trackIndex: this.trackIndex,
+                    mode: this.gameMode,
+                    grade: Progress.data.gradeLevel || 'prek'
+                });
+            }
+        } catch (_) {}
 
         const stats = Progress.getCarStats();
         this.baseSpeed = (2.5 + stats.speed * 0.8);
@@ -2304,6 +2324,25 @@ const Game = {
         if (typeof OTBEcosystem !== 'undefined') {
             OTBEcosystem.addXP(xpEarned, 'think-fast');
             OTBEcosystem.addCoins(stars + bonusStars, 'think-fast');
+        }
+
+        // Cross-game card drop: 3-star race drops a Creature Cards pack.
+        // Writes into shared 'bbg_pending_card_drops' queue; Creature Cards
+        // drains it on next open. See OTB-Creature-Cards/js/cross-game-drops.js.
+        if (stars >= 3) {
+            try {
+                const KEY = 'bbg_pending_card_drops';
+                const raw = localStorage.getItem(KEY);
+                const arr = raw ? JSON.parse(raw) : [];
+                arr.push({
+                    source: 'thinkfast',
+                    reason: '3-star:' + (this.subject || '') + ':' + (this.topic || ''),
+                    packType: 'daily',
+                    t: Date.now()
+                });
+                while (arr.length > 20) arr.shift();
+                localStorage.setItem(KEY, JSON.stringify(arr));
+            } catch (_) {}
         }
 
         // V5: Track generation wins and unlock bonus colors

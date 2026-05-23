@@ -42,8 +42,6 @@
     --otb-bg-primary: #1a1a2e;
     --otb-bg-secondary: #16213e;
     --otb-bg-tertiary: #0f3460;
-    /* Alias of --otb-bg-secondary, used by Creature Cards + Spidey for "card surface" */
-    --otb-surface: #16213e;
     --otb-success: #2ecc71;
     --otb-danger: #e74c3c;
     --otb-warning: #f39c12;

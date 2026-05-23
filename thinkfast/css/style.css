@@ -148,8 +148,16 @@ html, body {
 
 .btn-large {
     min-width: 220px;
-    min-height: 60px;
+    /* Fire/Silk: enlarged primary CTA targets for small fingers (was 60px) */
+    min-height: 80px;
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+}
+
+/* Fire/Silk: ensure all primary action buttons meet the 80px tap floor */
+.btn-primary,
+.btn-quick-race {
+    min-height: 80px;
+    min-width: 100px;
 }
 
 /* V14: Title screen buttons breathe subtly */
@@ -726,16 +734,15 @@ html, body {
     min-height: 50px;
 }
 
+/* Fire/Silk: base speaker rule (later rule provides 64x64 dimensions) */
 .btn-speaker {
     position: absolute;
     top: 12px;
     right: 16px;
-    background: none;
-    border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s;
+    opacity: 0.85;
+    transition: opacity 0.2s, background 0.15s, transform 0.15s;
 }
 
 .btn-speaker:active {
@@ -776,7 +783,8 @@ html, body {
     font-weight: 700;
     cursor: pointer;
     transition: transform 0.15s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
-    min-height: 56px;
+    /* Fire/Silk: 72px game-area tap zone for small fingers (was 56px) */
+    min-height: 72px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2924,6 +2932,7 @@ html, body {
 }
 
 /* ===== V22: SPEAKER / REPLAY BUTTON (larger for kids) ===== */
+/* Fire/Silk: bumped to 64x64 per Fire-tablet voice-replay spec */
 .btn-speaker {
     position: absolute;
     top: 8px;
@@ -2931,9 +2940,9 @@ html, body {
     background: rgba(255,255,255,0.2);
     border: 2px solid rgba(255,255,255,0.3);
     border-radius: 50%;
-    width: 52px;
-    height: 52px;
-    font-size: 1.5rem;
+    width: 64px;
+    height: 64px;
+    font-size: 1.8rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -3238,8 +3247,8 @@ body.high-contrast .hud-streak {
 /* Bigger pause button */
 .btn-pause { width: 52px; height: 52px; font-size: 1.4rem; }
 
-/* Bigger speaker button */
-.btn-speaker { font-size: 1.7rem; top: 10px; right: 14px; min-width: 44px; min-height: 44px; }
+/* Bigger speaker button — Fire/Silk: 64x64 minimum */
+.btn-speaker { font-size: 1.7rem; top: 10px; right: 14px; min-width: 64px; min-height: 64px; }
 }
 
 /* === Fire tablet touch target minimums (48px for ages 3-6) === */

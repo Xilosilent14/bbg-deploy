@@ -71,16 +71,44 @@ const Voice = (() => {
         preferredVoice = en.find(v => v.localService) || en[0] || voices[0] || null;
     }
 
+    function _debugLog() {
+        try {
+            return localStorage.getItem('bbg_tts_debug') === '1';
+        } catch (e) { return false; }
+    }
+
     function speak(text, options = {}) {
         if (!enabled) return Promise.resolve();
 
-        // Use Google Cloud TTS (works on Silk tablets)
+        // Use Google Cloud TTS (works on Silk tablets), with fallback on failure
         if (typeof CloudTTS !== 'undefined') {
-            return CloudTTS.speakSpidey(text, { onEnd: options.onEnd });
+            try {
+                if (_debugLog()) console.info('[Voice] CloudTTS.speakSpidey:', text);
+                const p = CloudTTS.speakSpidey(text, { onEnd: options.onEnd });
+                if (p && typeof p.catch === 'function') {
+                    return p.catch(err => {
+                        console.warn('[Voice] CloudTTS failed, falling back to Web Speech:', err);
+                        return _nativeSpeak(text, options);
+                    });
+                }
+                return Promise.resolve(p);
+            } catch (err) {
+                console.warn('[Voice] CloudTTS threw, falling back to Web Speech:', err);
+                return _nativeSpeak(text, options);
+            }
         }
 
+        return _nativeSpeak(text, options);
+    }
+
+    function _nativeSpeak(text, options) {
+        options = options || {};
         // Legacy speechSynthesis fallback
-        if (!synth) return Promise.resolve();
+        if (!synth) {
+            if (_debugLog()) console.warn('[Voice] No speechSynthesis available');
+            return Promise.resolve();
+        }
+        if (_debugLog()) console.info('[Voice] Web Speech fallback:', text);
         synth.cancel();
 
         return new Promise(resolve => {

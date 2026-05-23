@@ -9,7 +9,7 @@
  *   2nd: Color wheel concepts, complementary colors
  */
 const ColorCatch = (() => {
-    // Pre-K colors (primary + basics)
+    // Pre-K colors (primary + basics + seasonal swaps for variety)
     const PREK_COLORS = [
         { name: 'red', hex: '#e23636', dark: '#b01c1c' },
         { name: 'blue', hex: '#2196F3', dark: '#1565C0' },
@@ -18,7 +18,11 @@ const ColorCatch = (() => {
         { name: 'orange', hex: '#FF9800', dark: '#E65100' },
         { name: 'purple', hex: '#9C27B0', dark: '#6A1B9A' },
         { name: 'pink', hex: '#FF69B4', dark: '#D84D97' },
-        { name: 'brown', hex: '#8B4513', dark: '#5C2D0E' }
+        { name: 'brown', hex: '#8B4513', dark: '#5C2D0E' },
+        // Seasonal/themed extras — unlocked as the kid plays more days
+        { name: 'teal', hex: '#009688', dark: '#00695C' },
+        { name: 'gold', hex: '#FFC107', dark: '#FFA000' },
+        { name: 'lime', hex: '#CDDC39', dark: '#9E9D24' }
     ];
 
     // K adds secondary color mixing knowledge
@@ -143,7 +147,17 @@ const ColorCatch = (() => {
         bugs.sort(() => Math.random() - 0.5);
         _render();
         _startMovement();
-        setTimeout(() => Voice.speak(`Can you catch the ${targetColor.name} bugs?`), 300);
+        const catchPrompt = `Can you catch the ${targetColor.name} bugs?`;
+        Main.attachVoiceReplay(container, catchPrompt);
+        HintCascade.start({
+            getCorrectEl: () => {
+                // Find first uncaught matching bug element
+                const first = bugs.find(b => !b.caught && b.color.name === targetColor.name);
+                return first ? container.querySelector(`[data-bug-id="${first.id}"]`) : null;
+            },
+            prompt: catchPrompt
+        });
+        setTimeout(() => Voice.speak(catchPrompt), 300);
     }
 
     // ---------- K: Color Mixing ----------
@@ -186,14 +200,24 @@ const ColorCatch = (() => {
         `;
         container.querySelectorAll('.color-choice-btn').forEach(btn =>
             btn.addEventListener('click', () => _onMixChoice(btn)));
-        setTimeout(() => Voice.speak(`What color do ${mix.from[0]} and ${mix.from[1]} make?`), 400);
+        const mixPrompt = `What color do ${mix.from[0]} and ${mix.from[1]} make?`;
+        Main.attachVoiceReplay(container, mixPrompt);
+        HintCascade.start({
+            getCorrectEl: () => container.querySelector(`[data-color="${mixAnswer.mix}"]`),
+            prompt: mixPrompt
+        });
+        setTimeout(() => Voice.speak(mixPrompt), 400);
     }
 
     function _onMixChoice(btn) {
         if (!roundActive) return;
+        HintCascade.tap();
         const chosen = btn.dataset.color;
         roundTotal++;
         if (chosen === mixAnswer.mix) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('color-catch', true);
@@ -207,10 +231,10 @@ const ColorCatch = (() => {
             setTimeout(() => _nextGradeRound(), 2000);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('color-catch', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
-            Voice.speak(`Not quite. ${mixAnswer.from[0]} and ${mixAnswer.from[1]} make ${mixAnswer.mix}!`);
             const correctBtn = container.querySelector(`[data-color="${mixAnswer.mix}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
             setTimeout(() => {
@@ -253,14 +277,24 @@ const ColorCatch = (() => {
         `;
         container.querySelectorAll('.shade-choice-btn').forEach(btn =>
             btn.addEventListener('click', () => _onShadeChoice(btn)));
-        setTimeout(() => Voice.speak(`Can you find ${target.name}?`), 400);
+        const shadePrompt = `Can you find ${target.name}?`;
+        Main.attachVoiceReplay(container, shadePrompt);
+        HintCascade.start({
+            getCorrectEl: () => container.querySelector(`[data-shade="${target.name}"]`),
+            prompt: shadePrompt
+        });
+        setTimeout(() => Voice.speak(shadePrompt), 400);
     }
 
     function _onShadeChoice(btn) {
         if (!roundActive) return;
+        HintCascade.tap();
         const chosen = btn.dataset.shade;
         roundTotal++;
         if (chosen === targetColor.name) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('color-catch', true);
@@ -274,10 +308,10 @@ const ColorCatch = (() => {
             setTimeout(() => _nextGradeRound(), 1500);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('color-catch', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
-            Voice.speak(`That's ${chosen}. Look for ${targetColor.name}!`);
             const correctBtn = container.querySelector(`[data-shade="${targetColor.name}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
             setTimeout(() => {
@@ -317,14 +351,24 @@ const ColorCatch = (() => {
         `;
         container.querySelectorAll('.warmcool-btn').forEach(btn =>
             btn.addEventListener('click', () => _onWarmCoolChoice(btn)));
-        setTimeout(() => Voice.speak(`Is ${pick.name} a warm color or a cool color?`), 400);
+        const wcPrompt = `Is ${pick.name} a warm color or a cool color?`;
+        Main.attachVoiceReplay(container, wcPrompt);
+        HintCascade.start({
+            getCorrectEl: () => container.querySelector(`[data-answer="${mixAnswer}"]`),
+            prompt: wcPrompt
+        });
+        setTimeout(() => Voice.speak(wcPrompt), 400);
     }
 
     function _onWarmCoolChoice(btn) {
         if (!roundActive) return;
+        HintCascade.tap();
         const chosen = btn.dataset.answer;
         roundTotal++;
         if (chosen === mixAnswer) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('color-catch', true);
@@ -338,10 +382,10 @@ const ColorCatch = (() => {
             setTimeout(() => _nextGradeRound(), 1500);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('color-catch', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
-            Voice.speak(`${targetColor.name} is actually a ${mixAnswer} color!`);
             const correctBtn = container.querySelector(`[data-answer="${mixAnswer}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
             setTimeout(() => {
@@ -387,14 +431,24 @@ const ColorCatch = (() => {
         `;
         container.querySelectorAll('.color-choice-btn').forEach(btn =>
             btn.addEventListener('click', () => _onComplementaryChoice(btn)));
-        setTimeout(() => Voice.speak(`What is the opposite of ${shown.name} on the color wheel?`), 400);
+        const compPrompt = `What is the opposite of ${shown.name} on the color wheel?`;
+        Main.attachVoiceReplay(container, compPrompt);
+        HintCascade.start({
+            getCorrectEl: () => container.querySelector(`[data-color="${mixAnswer.name}"]`),
+            prompt: compPrompt
+        });
+        setTimeout(() => Voice.speak(compPrompt), 400);
     }
 
     function _onComplementaryChoice(btn) {
         if (!roundActive) return;
+        HintCascade.tap();
         const chosen = btn.dataset.color;
         roundTotal++;
         if (chosen === mixAnswer.name) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('color-catch', true);
@@ -408,10 +462,10 @@ const ColorCatch = (() => {
             setTimeout(() => _nextGradeRound(), 2000);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('color-catch', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
-            Voice.speak(`The opposite of ${targetColor.name} is ${mixAnswer.name}!`);
             const correctBtn = container.querySelector(`[data-color="${mixAnswer.name}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
             setTimeout(() => {
@@ -471,6 +525,9 @@ const ColorCatch = (() => {
 
         container.innerHTML = targetDisplay + `<div class="bug-field">${bugsHtml}</div>`;
         container.querySelectorAll('.bug').forEach(el => {
+            const id = parseInt(el.dataset.bugId);
+            const bug = bugs.find(b => b.id === id);
+            if (bug) bug._el = el; // cache DOM ref to avoid per-tick querySelector
             el.addEventListener('click', (e) => _onBugTap(e, el));
             el.addEventListener('touchstart', (e) => { e.preventDefault(); _onBugTap(e, el); }, { passive: false });
         });
@@ -478,11 +535,14 @@ const ColorCatch = (() => {
 
     function _onBugTap(e, el) {
         if (!roundActive) return;
+        HintCascade.tap();
         const bugId = parseInt(el.dataset.bugId);
         const bug = bugs.find(b => b.id === bugId);
         if (!bug || bug.caught) return;
 
         if (bug.color.name === targetColor.name) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(el);
             bug.caught = true;
             caught++;
             roundCorrect++;
@@ -501,6 +561,7 @@ const ColorCatch = (() => {
 
             if (caught >= needed) {
                 currentRoundNum++;
+                HintCascade.stop();
                 if (moveInterval) clearInterval(moveInterval);
                 Audio.playCelebration();
                 Character.celebrate();
@@ -515,32 +576,44 @@ const ColorCatch = (() => {
         } else {
             roundTotal++;
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('color-catch', false);
             Character.encourage();
             el.classList.add('bug-shake');
             setTimeout(() => el.classList.remove('bug-shake'), 500);
-            Voice.speak(`That's ${bug.color.name}. Try the ${targetColor.name} one!`);
         }
     }
 
     function _startMovement() {
         if (moveInterval) clearInterval(moveInterval);
+        // Use cached element refs + cached window dimensions to keep the hot
+        // path allocation-free. We recompute bounds on resize only.
+        let winW = window.innerWidth;
+        let winH = window.innerHeight;
+        const onResize = () => { winW = window.innerWidth; winH = window.innerHeight; };
+        window.addEventListener('resize', onResize, { passive: true });
         moveInterval = setInterval(() => {
             if (!roundActive) return;
-            bugs.forEach(b => {
-                if (b.caught) return;
+            const maxX = winW - 140;
+            const maxY = winH - 180;
+            for (let i = 0; i < bugs.length; i++) {
+                const b = bugs[i];
+                if (b.caught) continue;
                 b.wobble += 0.05;
                 b.x += b.vx + Math.sin(b.wobble) * 0.3;
                 b.y += b.vy + Math.cos(b.wobble) * 0.3;
-                if (b.x < 40 || b.x > window.innerWidth - 140) b.vx *= -1;
-                if (b.y < 80 || b.y > window.innerHeight - 180) b.vy *= -1;
-                b.x = Math.max(40, Math.min(window.innerWidth - 140, b.x));
-                b.y = Math.max(80, Math.min(window.innerHeight - 180, b.y));
-                const el = container.querySelector(`[data-bug-id="${b.id}"]`);
+                if (b.x < 40 || b.x > maxX) b.vx *= -1;
+                if (b.y < 80 || b.y > maxY) b.vy *= -1;
+                if (b.x < 40) b.x = 40; else if (b.x > maxX) b.x = maxX;
+                if (b.y < 80) b.y = 80; else if (b.y > maxY) b.y = maxY;
+                const el = b._el;
                 if (el) { el.style.left = b.x + 'px'; el.style.top = b.y + 'px'; }
-            });
+            }
         }, 50);
+        // Stash the cleanup so stop() can pick it up
+        _resizeCleanup = () => window.removeEventListener('resize', onResize);
     }
+    let _resizeCleanup = null;
 
     function _completeRound() {
         roundActive = false;
@@ -579,7 +652,9 @@ const ColorCatch = (() => {
     function stop() {
         roundActive = false;
         if (moveInterval) clearInterval(moveInterval);
+        if (_resizeCleanup) { try { _resizeCleanup(); } catch (_) {} _resizeCleanup = null; }
         bugs = [];
+        try { HintCascade.stop(); } catch (e) {}
     }
 
     return { start, stop };

@@ -77,6 +77,25 @@ const SortSweep = (() => {
     let questionType = 'sort';
     let currentAnswer = null;
 
+    function _wireAns(prompt) {
+        Main.attachVoiceReplay(container, prompt);
+        HintCascade.start({
+            getCorrectEl: () => container.querySelector(`[data-answer="${currentAnswer}"]`),
+            prompt: prompt
+        });
+    }
+    function _wireSort(prompt) {
+        Main.attachVoiceReplay(container, prompt);
+        HintCascade.start({
+            getCorrectEl: () => {
+                const item = roundData && roundData.items[currentItem];
+                if (!item) return null;
+                return container.querySelector(`[data-side="${item.correct}"]`);
+            },
+            prompt: prompt
+        });
+    }
+
     function start(containerEl, callback) {
         container = containerEl;
         onComplete = callback;
@@ -125,6 +144,7 @@ const SortSweep = (() => {
         const modeLabel = roundData.left.label + ' vs ' + roundData.right.label;
         setTimeout(() => Voice.speak(`Sort them! ${modeLabel}!`), 300);
     }
+    // ---- K helpers patched below have separate Voice prompts wired in _renderSortItem ----
 
     // ---------- K: 2-attribute sorting ----------
     function _startKSortRound() {
@@ -186,13 +206,19 @@ const SortSweep = (() => {
             </div>
         `;
         container.querySelectorAll('.pattern-choice-btn').forEach(btn => btn.addEventListener('click', () => _onPatternChoice(btn)));
-        setTimeout(() => Voice.speak('What comes next in the pattern?'), 400);
+        const pp = 'What comes next in the pattern?';
+        _wireAns(pp);
+        setTimeout(() => Voice.speak(pp), 400);
     }
 
     function _onPatternChoice(btn) {
+        HintCascade.tap();
         const chosen = btn.dataset.answer;
         roundTotal++;
         if (chosen === currentAnswer) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('sort-sweep', true);
@@ -206,12 +232,12 @@ const SortSweep = (() => {
             setTimeout(_startNewRound, 1500);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('sort-sweep', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
             const correctBtn = container.querySelector(`[data-answer="${currentAnswer}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
-            Voice.speak(`Look at the pattern again. The answer is ${currentAnswer === '🔴' ? 'red' : currentAnswer === '🔵' ? 'blue' : 'this one'}!`);
             setTimeout(() => { btn.classList.remove('choice-wrong'); if (correctBtn) correctBtn.classList.remove('choice-hint'); }, 2500);
         }
     }
@@ -249,7 +275,9 @@ const SortSweep = (() => {
             </div>
         `;
         container.querySelectorAll('.warmcool-btn').forEach(btn => btn.addEventListener('click', () => _onPatternChoice(btn)));
-        setTimeout(() => Voice.speak(`${a} bugs versus ${b} bugs. Does the left group have more, less, or equal?`), 400);
+        const pp = `${a} bugs versus ${b} bugs. Does the left group have more, less, or equal?`;
+        _wireAns(pp);
+        setTimeout(() => Voice.speak(pp), 400);
     }
 
     // ---------- 1st Grade: Number Patterns ----------
@@ -277,7 +305,9 @@ const SortSweep = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onNumberAnswer(btn)));
-        setTimeout(() => Voice.speak(`What number comes next? ${seq.join(', ')}...`), 400);
+        const pp = `What number comes next? ${seq.join(', ')}...`;
+        _wireAns(pp);
+        setTimeout(() => Voice.speak(pp), 400);
     }
 
     // ---------- 1st Grade: Tally Chart ----------
@@ -317,7 +347,9 @@ const SortSweep = (() => {
             </div>
         `;
         container.querySelectorAll('.pattern-choice-btn').forEach(btn => btn.addEventListener('click', () => _onPatternChoice(btn)));
-        setTimeout(() => Voice.speak(`Look at the tally chart. Which fruit has the ${askMost ? 'most' : 'fewest'}?`), 400);
+        const pp = `Look at the tally chart. Which fruit has the ${askMost ? 'most' : 'fewest'}?`;
+        _wireAns(pp);
+        setTimeout(() => Voice.speak(pp), 400);
     }
 
     // ---------- 1st Grade: Measurement Comparison ----------
@@ -353,7 +385,9 @@ const SortSweep = (() => {
             </div>
         `;
         container.querySelectorAll('.pattern-choice-btn').forEach(btn => btn.addEventListener('click', () => _onPatternChoice(btn)));
-        setTimeout(() => Voice.speak(`Which is ${askLonger ? 'longer' : 'shorter'}: the ${pair[0].name} or the ${pair[1].name}?`), 400);
+        const pp = `Which is ${askLonger ? 'longer' : 'shorter'}: the ${pair[0].name} or the ${pair[1].name}?`;
+        _wireAns(pp);
+        setTimeout(() => Voice.speak(pp), 400);
     }
 
     // ---------- 2nd Grade: Multiplication Patterns ----------
@@ -380,7 +414,9 @@ const SortSweep = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onNumberAnswer(btn)));
-        setTimeout(() => Voice.speak(`Count by ${mult}s. ${seq.join(', ')}... what comes next?`), 400);
+        const pp = `Count by ${mult}s. ${seq.join(', ')}... what comes next?`;
+        _wireAns(pp);
+        setTimeout(() => Voice.speak(pp), 400);
     }
 
     // ---------- 2nd Grade: Bar Graph ----------
@@ -418,7 +454,9 @@ const SortSweep = (() => {
                 </div>
             `;
             container.querySelectorAll('.pattern-choice-btn').forEach(btn => btn.addEventListener('click', () => _onPatternChoice(btn)));
-            setTimeout(() => Voice.speak('Look at the bar graph. Which day had the most books read?'), 400);
+            const pp = 'Look at the bar graph. Which day had the most books read?';
+            _wireAns(pp);
+            setTimeout(() => Voice.speak(pp), 400);
         } else {
             const total = values.reduce((a, b) => a + b, 0);
             currentAnswer = String(total);
@@ -449,7 +487,9 @@ const SortSweep = (() => {
                 </div>
             `;
             container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onNumberAnswer(btn)));
-            setTimeout(() => Voice.speak('How many total books were read this week? Add them all up!'), 400);
+            const pp = 'How many total books were read this week? Add them all up!';
+            _wireAns(pp);
+            setTimeout(() => Voice.speak(pp), 400);
         }
     }
 
@@ -495,14 +535,20 @@ const SortSweep = (() => {
             </div>
         `;
         container.querySelectorAll('.number-choice-btn').forEach(btn => btn.addEventListener('click', () => _onNumberAnswer(btn)));
-        setTimeout(() => Voice.speak(`The rule is ${rule.label}. What is the missing output for input ${inputs[mysteryIdx]}?`), 400);
+        const pp = `The rule is ${rule.label}. What is the missing output for input ${inputs[mysteryIdx]}?`;
+        _wireAns(pp);
+        setTimeout(() => Voice.speak(pp), 400);
     }
 
     // ---------- Number answer handler ----------
     function _onNumberAnswer(btn) {
+        HintCascade.tap();
         const chosen = btn.dataset.answer;
         roundTotal++;
         if (chosen === currentAnswer) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('sort-sweep', true);
@@ -516,12 +562,12 @@ const SortSweep = (() => {
             setTimeout(_startNewRound, 1500);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('sort-sweep', false);
             Character.encourage();
             btn.classList.add('choice-wrong');
             const correctBtn = container.querySelector(`[data-answer="${currentAnswer}"]`);
             if (correctBtn) correctBtn.classList.add('choice-hint');
-            Voice.speak(`Not quite. The answer is ${currentAnswer}.`);
             setTimeout(() => { btn.classList.remove('choice-wrong'); if (correctBtn) correctBtn.classList.remove('choice-hint'); }, 2500);
         }
     }
@@ -561,19 +607,25 @@ const SortSweep = (() => {
         `;
         container.querySelectorAll('.sort-web').forEach(btn => btn.addEventListener('click', () => _onSortChoice(btn)));
 
-        setTimeout(() => {
-            if (isSize) Voice.speak('Is this one big or small?');
-            else if (isLetterNum) Voice.speak(`Is "${item.display}" a letter or a number?`);
-            else if (item.label) Voice.speak(`Where does the ${item.label} one go?`);
-        }, 500);
+        let pp;
+        if (isSize) pp = 'Is this one big or small?';
+        else if (isLetterNum) pp = `Is "${item.display}" a letter or a number?`;
+        else if (item.label) pp = `Where does the ${item.label} one go?`;
+        else pp = 'Where does this go?';
+        _wireSort(pp);
+        setTimeout(() => Voice.speak(pp), 500);
     }
 
     function _onSortChoice(btn) {
+        HintCascade.tap();
         const side = btn.dataset.side;
         const item = roundData.items[currentItem];
         roundTotal++;
 
         if (side === item.correct) {
+            Encouragement.chime();
+            Encouragement.pulseCorrect(btn);
+            HintCascade.stop();
             roundCorrect++;
             Audio.playCorrect();
             Progress.recordAnswer('sort-sweep', true);
@@ -586,13 +638,12 @@ const SortSweep = (() => {
             setTimeout(_renderSortItem, 1000);
         } else {
             Audio.playWrong();
+            Encouragement.speakWrong();
             Progress.recordAnswer('sort-sweep', false);
             Character.encourage();
             btn.classList.add('sort-wrong');
             const correctBtn = container.querySelector(`[data-side="${item.correct}"]`);
             if (correctBtn) correctBtn.classList.add('sort-hint');
-            const correctLabel = item.correct === 'left' ? roundData.left.label : roundData.right.label;
-            Voice.speak(`Try the ${correctLabel} web!`);
             setTimeout(() => { btn.classList.remove('sort-wrong'); if (correctBtn) correctBtn.classList.remove('sort-hint'); }, 2000);
         }
     }
@@ -610,6 +661,6 @@ const SortSweep = (() => {
         Main.showStickerEarned(sticker);
     }
 
-    function stop() { currentItem = 999; currentRound = totalRounds; }
+    function stop() { currentItem = 999; currentRound = totalRounds; try { HintCascade.stop(); } catch (e) {} }
     return { start, stop };
 })();

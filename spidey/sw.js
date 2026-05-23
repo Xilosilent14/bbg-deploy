@@ -1,13 +1,16 @@
-const CACHE_NAME = 'spidey-academy-v21';
+const CACHE_NAME = 'spidey-academy-v23';
 
 const ASSETS = [
     '/', '/index.html', '/offline.html',
     '/css/style.css', '/css/shared/design-system.css',
+    '/js/error-boundary.js', '/js/analytics.js',
     '/js/otb-config.js', '/js/ecosystem.js', '/js/cloud-tts.js',
-    '/js/voice.js', '/js/audio.js', '/js/progress.js',
+    '/js/voice.js', '/js/audio.js', '/js/audio-enhancer.js',
+    '/js/progress.js', '/js/streak-ui.js',
     '/js/celebration.js', '/js/character.js',
     '/js/backgrounds.js', '/js/badges.js',
-    '/js/sticker-book.js', '/js/main.js',
+    '/js/encouragement.js', '/js/hint-cascade.js',
+    '/js/sticker-book.js', '/js/mystery-egg.js', '/js/main.js',
     '/js/activities/color-catch.js', '/js/activities/shape-builder.js',
     '/js/activities/number-bugs.js', '/js/activities/letter-web.js',
     '/js/activities/sort-sweep.js',

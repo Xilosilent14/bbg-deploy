@@ -430,6 +430,30 @@ const SurvivalMode = (() => {
                 });
             }
 
+            // Cross-game card drop: defeating a boss mob drops a Creature Cards pack.
+            // Writes into the shared 'bbg_pending_card_drops' queue; Creature Cards
+            // drains it on next open. See OTB-Creature-Cards/js/cross-game-drops.js.
+            // Guarded so each boss only triggers one drop (defeatAnim was just set).
+            if (isBoss) {
+                try {
+                    const KEY = 'bbg_pending_card_drops';
+                    const raw = localStorage.getItem(KEY);
+                    const arr = raw ? JSON.parse(raw) : [];
+                    arr.push({
+                        source: 'word-mine',
+                        reason: 'boss-defeat:' + currentMob + ':wave-' + wave,
+                        packType: 'victory',
+                        t: Date.now()
+                    });
+                    while (arr.length > 20) arr.shift();
+                    localStorage.setItem(KEY, JSON.stringify(arr));
+                    try { if (typeof Analytics !== 'undefined') Analytics.event('card_drop_emit', { mode: 'survival', source: 'word-mine', mob: currentMob }); } catch (_) {}
+                    setTimeout(() => {
+                        try { Main.showToast && Main.showToast('🃏 Card found! Open Creature Cards to see it!'); } catch (_) {}
+                    }, 900);
+                } catch (_) {}
+            }
+
             // Variable reward: rare treasure chest (5% normal, 25% boss)
             if (Math.random() < (isBoss ? 0.25 : 0.05)) {
                 const bonus = isBoss ? 20 : 8;

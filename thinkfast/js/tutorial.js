@@ -39,16 +39,23 @@ const Tutorial = {
                 <div class="tutorial-icon">${step.icon}</div>
                 <div class="tutorial-text">${step.text}</div>
                 <div class="tutorial-hint">Tap to continue (${stepNum}/${totalSteps})</div>
-                <button class="tutorial-skip" onclick="Tutorial.complete()">Skip Tutorial</button>
+                <button class="tutorial-skip" data-action="tutorial-complete">Skip Tutorial</button>
             </div>
         `;
         this.overlay.style.display = 'flex';
 
-        // Tap to dismiss
+        // Tap to dismiss; skip button completes the tutorial.
         const bubble = this.overlay.querySelector('.tutorial-bubble');
         if (bubble) {
+            const skipBtn = bubble.querySelector('[data-action="tutorial-complete"]');
+            if (skipBtn) {
+                skipBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.complete();
+                });
+            }
             bubble.addEventListener('click', (e) => {
-                if (e.target.classList.contains('tutorial-skip')) return;
+                if (e.target.closest('[data-action="tutorial-complete"]')) return;
                 this._dismiss();
             }, { once: true });
         }

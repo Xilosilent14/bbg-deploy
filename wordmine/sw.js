@@ -1,5 +1,5 @@
 // Word Mine — Service Worker for offline support
-const CACHE_NAME = 'wordmine-v67';
+const CACHE_NAME = 'wordmine-v68';
 const ASSETS = [
     './',
     './index.html',

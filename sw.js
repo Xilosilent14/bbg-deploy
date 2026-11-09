@@ -1,7 +1,7 @@
 // Blake Boys Gaming — Unified Service Worker
 // Covers Hub + all games under one origin
 
-const VERSION = '3';
+const VERSION = '4';
 const CACHE_SHARED = 'bbg-shared-v' + VERSION;
 const CACHE_HUB = 'bbg-hub-v' + VERSION;
 const CACHE_GAMES = {
